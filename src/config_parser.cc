@@ -14,6 +14,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "config_parser.h"
 
@@ -23,6 +24,32 @@ std::string NginxConfig::ToString(int depth) {
     serialized_config.append(statement->ToString(depth));
   }
   return serialized_config;
+}
+
+/*Prototype GetPort() function, kind of hacky and needs adjustments.
+
+  Currently returns the first port number found in the first server
+  block and assumes correct format was given from NginxConfig.Parse().
+
+  May want to incorporate catching multiple ports if multiple server 
+  blocks are required later.
+*/
+bool NginxConfig::GetPort(int* port) {
+  //bfs through config blocks
+  for (const auto& statement : statements_) {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(), 
+                                                        statement->tokens_.end(), 
+                                                        "listen");
+    if (find != statement->tokens_.end() &&
+        find != std::prev(statement->tokens_.end())) {
+      *port = std::stoi(*(find+1));
+      return true;
+    }
+    if (statement->child_block_.get() != nullptr) {
+      return statement->child_block_->GetPort(port);
+    };
+  }
+  return false;
 }
 
 std::string NginxConfigStatement::ToString(int depth) {
@@ -155,7 +182,7 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
   while (true) {
     std::string token;
     token_type = ParseToken(config_file, &token);
-    printf ("%s: %s\n", TokenTypeAsString(token_type), token.c_str());
+    //printf ("%s: %s\n", TokenTypeAsString(token_type), token.c_str());
     if (token_type == TOKEN_TYPE_ERROR) {
       break;
     }

@@ -19,6 +19,8 @@ class NginxConfigStatement {
 class NginxConfig {
  public:
   std::string ToString(int depth = 0);
+  //gets the port number specified in nginx file
+  bool GetPort(int* port);
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
 };
 
