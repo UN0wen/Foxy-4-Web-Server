@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 
 using boost::asio::ip::tcp;
+#include "reply.h"
 
 class session
 {
@@ -19,6 +20,7 @@ private:
       size_t bytes_transferred);
 
   void handle_write(const boost::system::error_code& error);
+  http::server::reply process_request();
 
   tcp::socket socket_;
   enum { max_length = 1024 };

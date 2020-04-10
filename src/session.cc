@@ -1,9 +1,12 @@
+//reference usage: https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/request_handler.cpp
+//reference usage: https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/connection.cpp
 #include <cstdlib>
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
 #include "session.h"
+#include "reply.h"
 
 session::session(boost::asio::io_service& io_service)
     : socket_(io_service)
@@ -23,15 +26,29 @@ void session::start()
           boost::asio::placeholders::bytes_transferred));
   }
 
+http::server::reply session::process_request(){
+  http::server::reply rep;
+  std::printf("msg recieved: %s", data_);
+  rep.status =  http::server::reply::ok;
+      rep.content = data_;
+      rep.headers.resize(2);
+      rep.headers[0].name = "Content-Length";
+      rep.headers[0].value = std::to_string(rep.content.size());
+      rep.headers[1].name = "content-type";
+      rep.headers[1].value = "text/plain";
+  return rep;
+}
+
 void session::handle_read(const boost::system::error_code& error,
       size_t bytes_transferred)
   {
     if (!error)
     {
       boost::asio::async_write(socket_,
-          boost::asio::buffer(data_, bytes_transferred),
+          session::process_request().to_buffers(),
           boost::bind(&session::handle_write, this,
             boost::asio::placeholders::error));
+      std::printf("Request complete %s", data_);
     }
     else
     {
