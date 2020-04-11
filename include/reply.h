@@ -14,19 +14,21 @@
 #include <string>
 #include <vector>
 #include <boost/asio.hpp>
+#include "header.h"
+
+/* namespace http { */
+/* namespace server { */
 
 
-namespace http {
-namespace server {
+/*   struct header */
+/* { */
+/*   std::string name; */
+/*   std::string value; */
+/* }; */
 
-struct header
-{
-  std::string name;
-  std::string value;
-};
+/* } // namespace server */
+/* } // namespace http */
 
-} // namespace server
-} // namespace http
 
 /// A reply to be sent to a client.
 namespace http {

@@ -44,11 +44,23 @@ void session::handle_read(const boost::system::error_code& error,
   {
     if (!error)
     {
-      boost::asio::async_write(socket_,
-          session::process_request().to_buffers(),
-          boost::bind(&session::handle_write, this,
-            boost::asio::placeholders::error));
-      std::printf("Request complete %s", data_);
+      //TODO: Remove this and add to @Joshuas code.
+      http::server::request_parser::result_type result;
+      std::tie(result, std::ignore) = request_parser_.parse(request_,
+							     data_,
+							     data_ + bytes_transferred);
+      std::cout << "result_type = " << result << std::endl;
+      if(result == http::server::request_parser::good) {
+	
+	boost::asio::async_write(socket_,
+				 session::process_request().to_buffers(),
+				 boost::bind(&session::handle_write, this,
+					     boost::asio::placeholders::error));
+	std::printf("Request complete %s", data_);
+      }
+      else if (result == http::server::request_parser::bad) {
+	//TODO: @Joshua
+      }
     }
     else
     {
