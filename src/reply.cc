@@ -33,7 +33,7 @@ const std::string moved_temporarily =
 const std::string not_modified =
   "HTTP/1.0 304 Not Modified\r\n";
 const std::string bad_request =
-  "HTTP/1.0 400 Bad Request\r\n";
+  "HTTP/1.1 400 Bad Request\r\n";
 const std::string unauthorized =
   "HTTP/1.0 401 Unauthorized\r\n";
 const std::string forbidden =

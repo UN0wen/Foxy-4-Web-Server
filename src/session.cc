@@ -34,7 +34,7 @@ http::server::reply session::process_request(bool status)
   rep.content = data_;
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size());
+  rep.headers[0].value = std::to_string(rep.content.size() - 1);
   rep.headers[1].name = "content-type";
   rep.headers[1].value = "text/plain";
   return rep;
@@ -71,6 +71,7 @@ void session::handle_read(const boost::system::error_code &error,
                                            boost::asio::placeholders::error));
     }
     std::printf("Request complete\n");
+    memset(data_, 0, sizeof(data_));
   }
   else
   {
