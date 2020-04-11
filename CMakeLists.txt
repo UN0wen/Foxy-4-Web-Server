@@ -47,11 +47,14 @@ add_executable(server src/server_main.cc)
 target_link_libraries(server server_lib session config_parser reply Boost::system request_parser)
 
 # TODO(!): Update test executable name, srcs, and deps
-# add_executable(example_lib_test tests/example_lib_test.cc)
-# target_link_libraries(example_lib_test example_lib gtest_main)
+add_executable(config_parser_test tests/config_parser/config_parser_test.cc)
+add_executable(GetPort_test tests/GetPort/GetPort_test.cc)
+target_link_libraries(config_parser_test config_parser gtest_main)
+target_link_libraries(GetPort_test config_parser gtest_main)
 
 # TODO(!): Update with test binary
-# gtest_discover_tests(example_lib_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
+gtest_discover_tests(GetPort_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/GetPort)
 
 # TODO(!): Update with target/test targets
 # include(cmake/CodeCoverageReportConfig.cmake)

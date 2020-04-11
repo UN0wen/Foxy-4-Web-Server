@@ -41,9 +41,17 @@ bool NginxConfig::GetPort(int* port) {
                                                         statement->tokens_.end(), 
                                                         "listen");
     if (find != statement->tokens_.end() &&
-        find != std::prev(statement->tokens_.end())) {
-      *port = std::stoi(*(find+1));
-      return true;
+      find != std::prev(statement->tokens_.end()) &&
+      statement->tokens_.size() == 2) {
+
+      std::string portstring = *(find+1);
+  	  if(portstring.find_first_not_of("0123456789") == std::string::npos) {
+	    *port = std::stoi(portstring);
+	    return true;
+	  }
+	  else { //token after listen is not numeric
+	  	return false;
+	  }
     }
     if (statement->child_block_.get() != nullptr) {
       return statement->child_block_->GetPort(port);
@@ -182,7 +190,7 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
   while (true) {
     std::string token;
     token_type = ParseToken(config_file, &token);
-    //printf ("%s: %s\n", TokenTypeAsString(token_type), token.c_str());
+    printf ("%s: %s\n", TokenTypeAsString(token_type), token.c_str());
     if (token_type == TOKEN_TYPE_ERROR) {
       break;
     }

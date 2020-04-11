@@ -32,15 +32,20 @@ int main(int argc, char* argv[])
 
     int port;
 
-    config_parser.Parse(argv[1], &config);
-    config.GetPort(&port);
+    bool parse_success = config_parser.Parse(argv[1], &config);
+    bool get_port = config.GetPort(&port);
+    
+    if(parse_success && get_port) {
+      boost::asio::io_service io_service;
 
-    boost::asio::io_service io_service;
+      server s(io_service, port);
 
-    using namespace std; // For atoi.
-    server s(io_service, port);
-
-    io_service.run();
+      io_service.run();
+    }
+    else {
+      std::cerr << "Error: Invalid config file." << "\n";
+      return 0;
+    }
   }
   catch (std::exception& e)
   {
