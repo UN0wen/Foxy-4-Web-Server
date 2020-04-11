@@ -22,7 +22,7 @@ private:
       size_t bytes_transferred);
 
   void handle_write(const boost::system::error_code& error);
-  http::server::reply process_request();
+  http::server::reply process_request(bool status);
 
   tcp::socket socket_;
   enum { max_length = 1024 };
