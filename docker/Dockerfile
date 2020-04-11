@@ -1,6 +1,7 @@
 ### Build/test container ###
 # Define builder stage
-FROM Foxy-4:base as builder
+# IMPORTANT: Build foxy-4 image from base.Dockerfile FIRST and tag it as base
+FROM foxy-4:base as builder
 
 # Share work directory
 COPY . /usr/src/project
@@ -9,23 +10,25 @@ WORKDIR /usr/src/project/build
 # Build and test
 RUN cmake ..
 RUN make
-RUN ctest --output-on_failure
+# Uncomment this later after tests are implemented
+# RUN ctest --output-on_failure
 
 
 ### Deploy container ###
 # Define deploy stage
 FROM ubuntu:latest as deploy
 
-# TODO(!): Copy server output binary to "."
-# COPY --from=builder /usr/src/project/build/bin/example_server .
+# TODO(drzheng): Copy server output binary to "."
+COPY --from=builder /usr/src/project/build/bin/server .
+COPY --from=builder /usr/src/project/config-docker/nginx.conf .
 
-# TODO(!): Expose some port(s)
-# EXPOSE 80
+# TODO(drzheng): Expose some port(s)
+EXPOSE 8000
 
 # Use ENTRYPOINT to specify the binary name
-# TODO(!): Update with real server name
-# ENTRYPOINT ["./example_server"]
+# TODO(drzheng): Update with real server name
+ENTRYPOINT ["./server"]
 
 # Use CMD to specify arguments to ENTRYPOINT
-# TODO(!): Update with real server args
-# CMD [""]
+# TODO(drzheng): Update with real server args
+CMD ["nginx.conf"]
