@@ -7,6 +7,7 @@
 
 using boost::asio::ip::tcp;
 #include "reply.h"
+#include "request_handler.h"
 
 class session
 {
@@ -24,6 +25,7 @@ private:
   void handle_write(const boost::system::error_code& error);
   http::server::reply process_request(bool status);
 
+  request_handler rh;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];

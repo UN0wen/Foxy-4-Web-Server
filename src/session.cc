@@ -26,37 +26,20 @@ void session::start()
                                       boost::asio::placeholders::bytes_transferred));
 }
 
-http::server::reply session::process_request(bool status)
-{
-  http::server::reply rep;
-  std::printf("msg recieved: \n %s", data_);
-  rep.status = status ? http::server::reply::ok : http::server::reply::bad_request;
-  rep.content = data_;
-  rep.headers.resize(2);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size() - 1);
-  rep.headers[1].name = "content-type";
-  rep.headers[1].value = "text/plain";
-  return rep;
-}
-
 void session::handle_read(const boost::system::error_code &error,
                           size_t bytes_transferred)
 {
   if (!error)
   {
     //reference of parser from boost library, precheck if a http comming msg is valid or not
-    http::server::request_parser::result_type result;
-    std::tie(result, std::ignore) = request_parser_.parse(request_,
-                                                          data_,
-                                                          data_ + bytes_transferred);
-    
+    http::server::request_parser::result_type result = rh.http_format_precheck(data_, bytes_transferred);
+
     //result for http request is good, async_write helps to send out http response with 200 back to client
     if (result == http::server::request_parser::good)
     {
       std::printf("http request is valid, now processing....\n");
       boost::asio::async_write(socket_,
-                               session::process_request(true).to_buffers(),
+                               rh.process_request(true, data_).to_buffers(),
                                boost::bind(&session::handle_write, this,
                                            boost::asio::placeholders::error));
     }
@@ -66,7 +49,7 @@ void session::handle_read(const boost::system::error_code &error,
     {
       std::printf("http request is not valid, sending back bad status...\n");
       boost::asio::async_write(socket_,
-                               session::process_request(false).to_buffers(),
+                               rh.process_request(false, data_).to_buffers(),
                                boost::bind(&session::handle_write, this,
                                            boost::asio::placeholders::error));
     }

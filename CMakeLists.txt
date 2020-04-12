@@ -40,21 +40,25 @@ add_library(reply src/reply.cc)
 add_library(session src/session.cc)
 add_library(request_parser src/request_parser.cc)
 add_library(config_parser src/config_parser.cc)
+add_library(request_handler src/request_handler.cc)
 
 
 # joshua: Update executable name, srcs, and deps
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib session config_parser reply Boost::system request_parser)
+target_link_libraries(server server_lib session config_parser reply request_handler Boost::system request_parser)
 
 # TODO(!): Update test executable name, srcs, and deps
 add_executable(config_parser_test tests/config_parser/config_parser_test.cc)
 add_executable(GetPort_test tests/GetPort/GetPort_test.cc)
+add_executable(request_handler_test tests/request_handler/request_handler_test.cc)
 target_link_libraries(config_parser_test config_parser gtest_main)
 target_link_libraries(GetPort_test config_parser gtest_main)
+target_link_libraries(request_handler_test request_handler request_parser reply  gtest_main Boost::system)
 
 # TODO(!): Update with test binary
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
 gtest_discover_tests(GetPort_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/GetPort)
+gtest_discover_tests(request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler)
 
 # TODO(!): Update with target/test targets
 # include(cmake/CodeCoverageReportConfig.cmake)
