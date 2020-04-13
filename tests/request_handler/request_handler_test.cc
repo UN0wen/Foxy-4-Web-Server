@@ -6,7 +6,6 @@ protected:
 	request_handler rh;
 };
 
-//TODO(Nelson): please write 2 more unit tests on parser. Follow my format
 TEST_F(RequestHandlerTest, InvalidHttpParseTest) {
     char msg[] = "hello\n";
     http::server::request_parser::result_type result = rh.http_format_precheck(msg, 6);
@@ -33,4 +32,26 @@ TEST_F(RequestHandlerTest, SendingBadStatus) {
     bool bad_status = rep.status == http::server::reply::bad_request;
 
     EXPECT_TRUE(bad_header_name && bad_content && bad_header_value && bad_status);
+}
+
+TEST_F(RequestHandlerTest, SendingBadStatusAgain) {
+    char msg[] = "sendingBadStatusAgain\n";
+    http::server::reply rep = rh.process_request(false, msg);
+    bool bad_header_name = rep.headers[1].name == "content-type";
+    bool bad_content = rep.content == "sendingBadStatusAgain\n";
+    bool bad_header_value = rep.headers[1].value == "text/plain";
+    bool bad_status = rep.status == http::server::reply::bad_request;
+
+    EXPECT_TRUE(bad_header_name && bad_content && bad_header_value && bad_status);
+}
+
+TEST_F(RequestHandlerTest, SendingGoodStatusAgain) {
+    char msg[] = "sendingGoodStatusAgain\n";
+    http::server::reply rep = rh.process_request(true, msg);
+    bool success_header_name = rep.headers[1].name == "content-type";
+    bool success_content = rep.content == "sendingGoodStatusAgain\n";
+    bool success_header_value = rep.headers[1].value == "text/plain";
+    bool success_status = rep.status == http::server::reply::ok;
+    
+    EXPECT_TRUE(success_header_name && success_content && success_header_value && success_status);
 }

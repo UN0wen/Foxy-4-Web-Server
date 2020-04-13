@@ -10,7 +10,6 @@
 
 #include "request_parser.h"
 #include "request.h"
-#include <iostream>
 
 namespace http {
 namespace server {
