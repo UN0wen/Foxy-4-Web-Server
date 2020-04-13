@@ -18,12 +18,25 @@ http::server::request_parser::result_type  request_handler::http_format_precheck
     std::tie(result, std::ignore) = request_parser_.parse(request_,
                                                           data,
                                                           data + bytes_transferred);
+    int char_amount = request_parser_.get_char_amount();                                                          
+    for (int i = 0; i < request_.headers.size(); i++)
+      {
+        if (request_.headers[i].name == "Content-Length" && request_.headers[i].value != "0" && char_amount == strlen(data))
+        {
+          result = http::server::request_parser::result_type::missing_data;
+        }
+      }
     return result;                                                          
+}
+
+http::server::request request_handler::get_request()
+{
+  return request_;
 }
 
 http::server::reply request_handler::process_request(bool status, char data[]){
   http::server::reply rep;
-  std::printf("msg recieved: \n %s", data);
+  std::printf("msg recieved: %s \n", data);
   rep.status = status ? http::server::reply::ok : http::server::reply::bad_request;
   rep.content = data;
   rep.headers.resize(2);

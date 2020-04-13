@@ -18,6 +18,11 @@ namespace server {
 request_parser::request_parser()
   : state_(method_start)
 {
+  n_char_parsed = 0;
+}
+
+int request_parser::get_char_amount(){
+  return n_char_parsed;
 }
 
 void request_parser::reset()

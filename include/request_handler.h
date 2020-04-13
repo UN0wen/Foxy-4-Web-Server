@@ -14,6 +14,7 @@ public:
   request_handler();
   http::server::reply process_request(bool status, char data[]);
   http::server::request_parser::result_type http_format_precheck(char data[], size_t bytes_transferred);
+  http::server::request get_request();
 
 private:
 

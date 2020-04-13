@@ -26,6 +26,24 @@ void session::start()
                                       boost::asio::placeholders::bytes_transferred));
 }
 
+void session::handle_final_read(const boost::system::error_code &error,
+                                size_t bytes_transferred)
+{
+  char *full_text;
+  full_text = (char *)malloc(strlen(buffer) + strlen(data_) + 1);
+  strcpy(full_text, data_);
+  strcat(full_text, buffer);
+  std::cout << "my data :" << buffer << std::endl;
+  std::cout << "my full_text :" << full_text << std::endl;
+  boost::asio::async_write(socket_,
+                           rh.process_request(true, full_text).to_buffers(),
+                           boost::bind(&session::handle_write, this,
+                                       boost::asio::placeholders::error));
+  std::printf("Request complete\n");                                       
+  memset(data_, 0, sizeof(data_));
+  memset(buffer, 0, sizeof(buffer));
+}
+
 void session::handle_read(const boost::system::error_code &error,
                           size_t bytes_transferred)
 {
@@ -37,13 +55,26 @@ void session::handle_read(const boost::system::error_code &error,
     //result for http request is good, async_write helps to send out http response with 200 back to client
     if (result == http::server::request_parser::good)
     {
+      http::server::request req = rh.get_request();
+
       std::printf("http request is valid, now processing....\n");
+
       boost::asio::async_write(socket_,
                                rh.process_request(true, data_).to_buffers(),
                                boost::bind(&session::handle_write, this,
                                            boost::asio::placeholders::error));
+    std::printf("Request complete\n");                                           
     }
 
+    else if (result == http::server::request_parser::missing_data)
+    {
+      std::printf("http request is missing data, now processing....\n");
+      std::cout << "buffer established" << std::endl;
+      socket_.async_read_some(boost::asio::buffer(buffer, max_length),
+                              boost::bind(&session::handle_final_read, this,
+                                          boost::asio::placeholders::error,
+                                          boost::asio::placeholders::bytes_transferred));
+    }
     //result for http request is bad, async_write will send out http response 400 back to the client
     else if (result == http::server::request_parser::bad)
     {
@@ -52,9 +83,11 @@ void session::handle_read(const boost::system::error_code &error,
                                rh.process_request(false, data_).to_buffers(),
                                boost::bind(&session::handle_write, this,
                                            boost::asio::placeholders::error));
+    std::printf("Request complete\n");                                           
     }
-    std::printf("Request complete\n");
-    memset(data_, 0, sizeof(data_));
+    
+    if (result != http::server::request_parser::missing_data)  
+      memset(data_, 0, sizeof(data_));
   }
   else
   {
