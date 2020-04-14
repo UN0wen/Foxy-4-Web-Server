@@ -12,9 +12,9 @@ RequestHandler::RequestHandler()
 {
 }
 
-http::server::RequestParser::result_type  RequestHandler::http_format_precheck(char data[], size_t bytes_transferred)
+RequestParser::result_type  RequestHandler::http_format_precheck(char data[], size_t bytes_transferred)
 {
-    http::server::RequestParser::result_type result;
+    RequestParser::result_type result;
     std::tie(result, std::ignore) = request_parser_.parse(request_,
                                                           data,
                                                           data + bytes_transferred);
@@ -23,21 +23,21 @@ http::server::RequestParser::result_type  RequestHandler::http_format_precheck(c
       {
         if (request_.headers[i].name == "Content-Length" && request_.headers[i].value != "0" && char_amount == strlen(data))
         {
-          result = http::server::RequestParser::result_type::missing_data;
+          result = RequestParser::result_type::missing_data;
         }
       }
     return result;                                                          
 }
 
-http::server::Request RequestHandler::get_request()
+Request RequestHandler::get_request()
 {
   return request_;
 }
 
-http::server::Reply RequestHandler::process_request(bool status, char data[]){
-  http::server::Reply rep;
+Reply RequestHandler::process_request(bool status, char data[]){
+  Reply rep;
   std::printf("msg recieved: %s \n", data);
-  rep.status = status ? http::server::Reply::ok : http::server::Reply::bad_request;
+  rep.status = status ? Reply::ok : Reply::bad_request;
   rep.content = data;
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";

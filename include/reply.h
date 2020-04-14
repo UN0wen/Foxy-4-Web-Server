@@ -16,23 +16,7 @@
 #include <boost/asio.hpp>
 #include "header.h"
 
-/* namespace http { */
-/* namespace server { */
 
-
-/*   struct header */
-/* { */
-/*   std::string name; */
-/*   std::string value; */
-/* }; */
-
-/* } // namespace server */
-/* } // namespace http */
-
-
-/// A reply to be sent to a client.
-namespace http {
-namespace server {
 
 /// A reply to be sent to a client.
 struct Reply
@@ -73,7 +57,5 @@ struct Reply
   static Reply stock_reply(status_type status);
 };
 
-} // namespace server
-} // namespace http
 
 #endif // HTTP_REPLY_HPP

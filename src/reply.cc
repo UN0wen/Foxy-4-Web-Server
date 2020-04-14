@@ -11,8 +11,7 @@
 #include "reply.h"
 #include <string>
 
-namespace http {
-namespace server {
+
 
 namespace status_strings {
 
@@ -250,6 +249,3 @@ Reply Reply::stock_reply(Reply::status_type status)
   rep.headers[1].value = "text/html";
   return rep;
 }
-
-} // namespace server
-} // namespace http

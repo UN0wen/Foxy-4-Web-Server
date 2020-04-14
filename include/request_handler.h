@@ -12,12 +12,12 @@ class RequestHandler
 {
 public:
   RequestHandler();
-  http::server::Reply process_request(bool status, char data[]);
-  http::server::RequestParser::result_type http_format_precheck(char data[], size_t bytes_transferred);
-  http::server::Request get_request();
+  Reply process_request(bool status, char data[]);
+  RequestParser::result_type http_format_precheck(char data[], size_t bytes_transferred);
+  Request get_request();
 
 private:
 
-  http::server::Request request_;
-  http::server::RequestParser request_parser_;
+  Request request_;
+  RequestParser request_parser_;
 };

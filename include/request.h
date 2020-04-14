@@ -8,15 +8,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef HTTP_REQUEST_HPP
-#define HTTP_REQUEST_HPP
 
 #include <string>
 #include <vector>
 #include "header.h"
 
-namespace http {
-namespace server {
 
 /// A request received from a client.
 struct Request
@@ -28,7 +24,3 @@ struct Request
   std::vector<Header> headers;
 };
 
-} // namespace server
-} // namespace http
-
-#endif // HTTP_REQUEST_HPP
