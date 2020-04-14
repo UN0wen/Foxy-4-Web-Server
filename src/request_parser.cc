@@ -11,7 +11,6 @@
 #include "request_parser.h"
 #include "request.h"
 
-
 RequestParser::RequestParser()
     : state_(method_start)
 {
@@ -329,4 +328,3 @@ bool RequestParser::is_digit(int c)
 {
   return c >= '0' && c <= '9';
 }
-

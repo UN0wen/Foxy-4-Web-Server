@@ -11,7 +11,6 @@
 #include <tuple>
 #include <iostream>
 
-
 struct Request;
 
 /// Parser for incoming requests.
@@ -25,7 +24,7 @@ public:
   void reset();
 
   int get_char_amount();
-
+  
   /// Result of parse.
   enum result_type
   {
@@ -41,7 +40,7 @@ public:
   /// has been consumed.
   template <typename InputIterator>
   std::tuple<result_type, InputIterator> parse(Request &req,
-                                                              InputIterator begin, InputIterator end)
+                                               InputIterator begin, InputIterator end)
   {
     while (begin != end)
     {
@@ -97,5 +96,3 @@ private:
     expecting_newline_3
   } state_;
 };
-
-
