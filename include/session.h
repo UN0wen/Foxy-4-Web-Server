@@ -9,10 +9,10 @@ using boost::asio::ip::tcp;
 #include "reply.h"
 #include "request_handler.h"
 
-class session
+class Session
 {
 public:
-  session(boost::asio::io_service& io_service);
+  Session(boost::asio::io_service& io_service);
 
   tcp::socket& socket();
 
@@ -25,13 +25,13 @@ private:
       size_t bytes_transferred);
 
   void handle_write(const boost::system::error_code& error);
-  http::server::reply process_request(bool status);
+  http::server::Reply process_request(bool status);
   
-  request_handler rh;
+  RequestHandler rh;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];
   char buffer[max_length];
-  http::server::request request_;
-  http::server::request_parser request_parser_;
+  http::server::Request request_;
+  http::server::RequestParser request_parser_;
 };

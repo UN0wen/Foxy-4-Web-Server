@@ -8,16 +8,16 @@
 using boost::asio::ip::tcp;
 #include "reply.h"
 
-class request_handler
+class RequestHandler
 {
 public:
-  request_handler();
-  http::server::reply process_request(bool status, char data[]);
-  http::server::request_parser::result_type http_format_precheck(char data[], size_t bytes_transferred);
-  http::server::request get_request();
+  RequestHandler();
+  http::server::Reply process_request(bool status, char data[]);
+  http::server::RequestParser::result_type http_format_precheck(char data[], size_t bytes_transferred);
+  http::server::Request get_request();
 
 private:
 
-  http::server::request request_;
-  http::server::request_parser request_parser_;
+  http::server::Request request_;
+  http::server::RequestParser request_parser_;
 };

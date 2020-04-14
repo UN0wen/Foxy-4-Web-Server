@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     if(parse_success && get_port) {
       boost::asio::io_service io_service;
 
-      server s(io_service, port);
+      Server s(io_service, port);
 
       io_service.run();
     }

@@ -7,16 +7,16 @@
 using boost::asio::ip::tcp;
 #include "session.h"
 
-class server
+class Server
 {
 
 public:
-    server(boost::asio::io_service &io_service, short port);
+    Server(boost::asio::io_service &io_service, short port);
 
 private:
     void start_accept();
 
-    void handle_accept(session *new_session,
+    void handle_accept(Session *new_session,
                        const boost::system::error_code &error);
 
     boost::asio::io_service &io_service_;

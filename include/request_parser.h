@@ -1,5 +1,5 @@
 //
-// request_parser.hpp
+// RequestParser.hpp
 // ~~~~~~~~~~~~~~~~~~
 //
 // Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
@@ -14,17 +14,19 @@
 #include <tuple>
 #include <iostream>
 
-namespace http {
-namespace server {
+namespace http
+{
+namespace server
+{
 
-struct request;
+struct Request;
 
 /// Parser for incoming requests.
-class request_parser
+class RequestParser
 {
 public:
   /// Construct ready to parse the request method.
-  request_parser();
+  RequestParser();
 
   /// Reset to initial parser state.
   void reset();
@@ -32,21 +34,28 @@ public:
   int get_char_amount();
 
   /// Result of parse.
-  enum result_type { good, bad, indeterminate, missing_data};
+  enum result_type
+  {
+    good,
+    bad,
+    indeterminate,
+    missing_data
+  };
 
   /// Parse some data. The enum return value is good when a complete request has
   /// been parsed, bad if the data is invalid, indeterminate when more data is
   /// required. The InputIterator return value indicates how much of the input
   /// has been consumed.
   template <typename InputIterator>
-  std::tuple<result_type, InputIterator> parse(request& req,
-      InputIterator begin, InputIterator end)
+  std::tuple<result_type, InputIterator> parse(Request &req,
+                                                              InputIterator begin, InputIterator end)
   {
     while (begin != end)
     {
-      result_type result = consume(req, *begin++);
-      n_char_parsed ++;
-      if (result == good || result == bad){
+      RequestParser::result_type result = consume(req, *begin++);
+      n_char_parsed++;
+      if (result == good || result == bad)
+      {
         return std::make_tuple(result, begin);
       }
     }
@@ -54,10 +63,9 @@ public:
   }
 
 private:
-  
   int n_char_parsed;
   /// Handle the next character of input.
-  result_type consume(request& req, char input);
+  result_type consume(Request &req, char input);
 
   /// Check if a byte is an HTTP character.
   static bool is_char(int c);

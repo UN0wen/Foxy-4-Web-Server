@@ -5,7 +5,7 @@
 
 #include "server.h"
 
-server::server(boost::asio::io_service &io_service, short port)
+Server::Server(boost::asio::io_service &io_service, short port)
     : io_service_(io_service),
       acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
 {
@@ -13,15 +13,15 @@ server::server(boost::asio::io_service &io_service, short port)
 }
 
 
-void server::start_accept()
+void Server::start_accept()
 {
-    session *new_session = new session(io_service_);
+    Session *new_session = new Session(io_service_);
     acceptor_.async_accept(new_session->socket(),
-                           boost::bind(&server::handle_accept, this, new_session,
+                           boost::bind(&Server::handle_accept, this, new_session,
                                        boost::asio::placeholders::error));
 }
 
-void server::handle_accept(session *new_session,
+void Server::handle_accept(Session *new_session,
                    const boost::system::error_code &error)
 {
     if (!error)
