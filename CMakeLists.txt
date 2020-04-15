@@ -38,20 +38,22 @@ include_directories(include)
 add_library(server_lib src/server.cc)
 add_library(reply src/reply.cc)
 add_library(session src/session.cc)
+add_library(config src/config.cc)
 add_library(request_parser src/request_parser.cc)
 add_library(config_parser src/config_parser.cc)
 add_library(request_handler src/request_handler.cc)
+add_library(config_statement src/config_statement.cc)
 
 
 # joshua: Update executable name, srcs, and deps
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib session config_parser reply request_handler Boost::system request_parser)
+target_link_libraries(server server_lib session config config_parser config_statement reply request_handler Boost::system request_parser)
 
 add_executable(config_parser_test tests/config_parser/config_parser_test.cc)
 add_executable(GetPort_test tests/GetPort/GetPort_test.cc)
 add_executable(request_handler_test tests/request_handler/request_handler_test.cc)
-target_link_libraries(config_parser_test config_parser gtest_main)
-target_link_libraries(GetPort_test config_parser gtest_main)
+target_link_libraries(config_parser_test config config_parser config_statement gtest_main)
+target_link_libraries(GetPort_test config config_parser config_statement gtest_main)
 target_link_libraries(request_handler_test request_handler request_parser reply  gtest_main Boost::system)
 
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
@@ -59,5 +61,5 @@ gtest_discover_tests(GetPort_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 gtest_discover_tests(request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler)
 
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server server_lib session config_parser reply request_handler Boost::system request_parser
-  TESTS config_parser_test GetPort_test request_handler_test config_parser_test)
+generate_coverage_report(TARGETS server server_lib session config config_parser config_statement reply request_handler Boost::system request_parser
+  TESTS config config_parser_test config_statement GetPort_test request_handler_test config_parser_test)
