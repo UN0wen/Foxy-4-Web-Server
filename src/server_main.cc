@@ -41,6 +41,8 @@ int main(int argc, char* argv[])
       Server s(io_service, port);
 
       io_service.run();
+
+      std::cout << "Webserver started on port " << port << "." << std::endl;
     }
     else {
       std::cerr << "Error: Invalid config file." << "\n";

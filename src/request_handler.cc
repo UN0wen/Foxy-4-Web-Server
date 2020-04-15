@@ -12,21 +12,32 @@ RequestHandler::RequestHandler()
 {
 }
 
-RequestParser::result_type  RequestHandler::http_format_precheck(char data[], size_t bytes_transferred)
+int RequestHandler::get_content_length()
 {
-    RequestParser::result_type result;
-    std::tie(result, std::ignore) = request_parser_.parse(request_,
-                                                          data,
-                                                          data + bytes_transferred);
-    int char_amount = request_parser_.get_char_amount();                                                          
-    for (int i = 0; i < request_.headers.size(); i++)
-      {
-        if (request_.headers[i].name == "Content-Length" && request_.headers[i].value != "0" && char_amount == strlen(data))
-        {
-          result = RequestParser::result_type::missing_data;
-        }
-      }
-    return result;                                                          
+  for (int i = 0; i < request_.headers.size(); i++)
+  {
+    if (request_.headers[i].name == "Content-Length")
+      return std::stoi(request_.headers[i].value);
+  }
+
+  return 0;
+}
+RequestParser::result_type RequestHandler::http_format_precheck(char data[], size_t bytes_transferred)
+{
+  RequestParser::result_type result;
+  std::tie(result, std::ignore) = request_parser_.parse(request_,
+                                                        data,
+                                                        data + bytes_transferred);
+
+  int char_amount = request_parser_.get_char_amount();
+  int content_length = get_content_length();
+
+  if (content_length > 0 && char_amount == strlen(data))
+  {
+    return result = RequestParser::result_type::missing_data;
+  }
+
+  return result;
 }
 
 Request RequestHandler::get_request()
@@ -34,9 +45,10 @@ Request RequestHandler::get_request()
   return request_;
 }
 
-Reply RequestHandler::process_request(bool status, char data[]){
+Reply RequestHandler::process_request(bool status, char data[])
+{
   Reply rep;
-  std::printf("msg recieved: %s \n", data);
+
   rep.status = status ? Reply::ok : Reply::bad_request;
   rep.content = data;
   rep.headers.resize(2);
@@ -45,5 +57,4 @@ Reply RequestHandler::process_request(bool status, char data[]){
   rep.headers[1].name = "content-type";
   rep.headers[1].value = "text/plain";
   return rep;
-
 }

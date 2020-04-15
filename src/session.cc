@@ -29,19 +29,20 @@ void Session::start()
 void Session::handle_final_read(const boost::system::error_code &error,
                                 size_t bytes_transferred)
 {
+  std::cout << "Additonal data fetched: " << buffer_ << std::endl;
   char *full_text;
-  full_text = (char *)malloc(strlen(buffer) + strlen(data_) + 1);
+  full_text = (char *)malloc(strlen(buffer_) + strlen(data_) + 1);
   strcpy(full_text, data_);
-  strcat(full_text, buffer);
-  std::cout << "my data :" << buffer << std::endl;
-  std::cout << "my full_text :" << full_text << std::endl;
+  strcat(full_text, buffer_);
+  
   boost::asio::async_write(socket_,
-                           rh.process_request(true, full_text).to_buffers(),
+                           request_handler_.process_request(true, full_text).to_buffers(),
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
-  std::printf("Request complete\n");                                       
+
+  std::cout << "Reply sent." << std::endl; 
   memset(data_, 0, sizeof(data_));
-  memset(buffer, 0, sizeof(buffer));
+  memset(buffer_, 0, sizeof(buffer_));
 }
 
 void Session::handle_read(const boost::system::error_code &error,
@@ -49,28 +50,31 @@ void Session::handle_read(const boost::system::error_code &error,
 {
   if (!error)
   {
-    //reference of parser from boost library, precheck if a http comming msg is valid or not
-    RequestParser::result_type result = rh.http_format_precheck(data_, bytes_transferred);
+    std::cout << "Message received: " << data_ << std::endl;
+    // Prechecking if an incoming HTTP message is valid or not
+    RequestParser::result_type result = request_handler_.http_format_precheck(data_, bytes_transferred);
 
-    //result for http request is good, async_write helps to send out http response with 200 back to client
+    // Result for HTTP request is good, send out HTTP response with code 200 back to client
     if (result == RequestParser::good)
     {
-      Request req = rh.get_request();
+      std::cout << "HTTP format check passed, preparing reply..." << std::endl;
 
-      std::printf("http request is valid, now processing....\n");
+      Request req = request_handler_.get_request();
 
       boost::asio::async_write(socket_,
-                               rh.process_request(true, data_).to_buffers(),
+                               request_handler_.process_request(true, data_).to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-    std::printf("Request complete\n");                                           
+      std::cout << "Reply sent." << std::endl;                                  
     }
 
+    // Result from HTTP request is good but the data portion is missing
+    // Server tries to read again from socket to get the missing data
     else if (result == RequestParser::missing_data)
     {
-      std::printf("http request is missing data, now processing....\n");
-      std::cout << "buffer established" << std::endl;
-      socket_.async_read_some(boost::asio::buffer(buffer, max_length),
+      std::cout << "HTTP format check passed but message is missing data, fetching..." << std::endl;
+      int content_length = request_handler_.get_content_length();
+      socket_.async_read_some(boost::asio::buffer(buffer_, max_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,
                                           boost::asio::placeholders::bytes_transferred));
@@ -78,12 +82,12 @@ void Session::handle_read(const boost::system::error_code &error,
     //result for http request is bad, async_write will send out http response 400 back to the client
     else if (result == RequestParser::bad)
     {
-      std::printf("http request is not valid, sending back bad status...\n");
+      std::cout << "HTTP format check failed, preparing reply..." << std::endl;
       boost::asio::async_write(socket_,
-                               rh.process_request(false, data_).to_buffers(),
+                               request_handler_.process_request(false, data_).to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-    std::printf("Request complete\n");                                           
+      std::cout << "Reply sent." << std::endl;                                            
     }
     
     if (result != RequestParser::missing_data)  
