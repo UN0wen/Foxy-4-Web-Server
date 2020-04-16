@@ -96,7 +96,7 @@ NginxConfigParser::TokenType NginxConfigParser::ParseToken(std::istream* input,
         *value += c;
         continue;
       case TOKEN_STATE_TOKEN_TYPE_NORMAL:
-        if (c == ' ' || c == '\t' || c == '\n' || c == '\t' ||
+        if (c == ' ' || c == '\t' || c == '\n' ||
             c == ';' || c == '{' || c == '}') {
           input->unget();
           return TOKEN_TYPE_NORMAL;
@@ -174,15 +174,13 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
         // Error.
         break;
       }
-        // If the current close bracket is superfluous, return an error
-      if (config_stack.empty())
-      	break;
       config_stack.pop();
     } else if (token_type == TOKEN_TYPE_EOF) {
     	// Allow empty file
       if (last_token_type != TOKEN_TYPE_STATEMENT_END &&
           last_token_type != TOKEN_TYPE_END_BLOCK &&
-          last_token_type != TOKEN_TYPE_START) {
+          last_token_type != TOKEN_TYPE_START && 
+          last_token_type != TOKEN_TYPE_COMMENT) {
         // Error.
         break;
       }

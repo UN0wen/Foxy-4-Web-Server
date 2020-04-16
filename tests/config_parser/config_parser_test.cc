@@ -62,3 +62,34 @@ TEST_F(NginxConfigParserTest, Extrabracketend) {
    bool success = parser.Parse("extrabracket_start", &out_config);
    EXPECT_FALSE(success);
 }//tests to see if an extra closing bracket at the end is caught
+
+TEST_F(NginxConfigParserTest, Emptybracketend) {
+   bool success = parser.Parse("emptybracket_end", &out_config);
+   EXPECT_FALSE(success);
+}//tests to see if an extra closing bracket at the end is caught
+ //basically the same as above, but for more branch coverage
+
+TEST_F(NginxConfigParserTest, Singlequote) {
+   bool success = parser.Parse("singlequote", &out_config);
+   EXPECT_TRUE(success);
+}//tests to see if singlequote escape is valid
+
+TEST_F(NginxConfigParserTest, Comment) {
+   bool success = parser.Parse("comment", &out_config);
+   EXPECT_TRUE(success);
+}//tests to see if comments are valid
+
+TEST_F(NginxConfigParserTest, Unclosedquote) {
+   bool success = parser.Parse("quoteerror", &out_config);
+   EXPECT_FALSE(success);
+}//tests to see if unclosed singlequote is caught
+
+TEST_F(NginxConfigParserTest, UnclosedDoublequote) {
+   bool success = parser.Parse("doublequoteerror", &out_config);
+   EXPECT_FALSE(success);
+}//tests to see if unclosed doublequote is caught
+
+TEST_F(NginxConfigParserTest, DoubleSemicolon) {
+   bool success = parser.Parse("doublesemi", &out_config);
+   EXPECT_FALSE(success);
+}//tests to see if double semicolon is caught

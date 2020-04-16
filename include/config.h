@@ -4,7 +4,16 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "config_statement.h"
+
+class NginxConfig;
+
+// The parsed representation of a single config statement.
+class NginxConfigStatement {
+ public:
+  std::string ToString(int depth);
+  std::vector<std::string> tokens_;
+  std::unique_ptr<NginxConfig> child_block_;
+};
 
 // The parsed representation of the entire config.
 class NginxConfig {
