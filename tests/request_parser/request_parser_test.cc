@@ -26,10 +26,7 @@ Content-Length: 19\r\n\
 Content-Type: application/json\r\n\
 Host: localhost:8000\r\n\
 User-Agent: HTTPie/0.9.8\r\n\r\n\
-\n\
-{\
-    'test_value': '1'\
-}";
+{'test_value': '1'}";
 
     const int POST_REQUEST_LENGTH = 225;
     const int CONTENT_LENGTH = 19;
@@ -182,7 +179,7 @@ TEST_F(RequestParserTest, PostRequestLength)
             break;
         }
     }
-    // std::cerr << "Post request char amount: " << parser.get_char_amount() << std::endl;
+
     EXPECT_TRUE(content_length == CONTENT_LENGTH);
     EXPECT_TRUE((parser.get_char_amount() + content_length == POST_REQUEST_LENGTH));
 }
@@ -517,7 +514,6 @@ TEST_F(RequestParserTest, EmptyRequest)
                                                  empty_data,
                                                  empty_data + strlen(empty_data));
 
-    std::cerr << result << std::endl;
     EXPECT_TRUE(result == RequestParser::result_type::indeterminate);
 }
 
@@ -529,7 +525,6 @@ TEST_F(RequestParserTest, NotReachEndState)
                                                  incomplete_data,
                                                  incomplete_data + 1);
 
-    std::cerr << result << std::endl;
     EXPECT_TRUE(result == RequestParser::result_type::indeterminate);
 }
 
@@ -541,6 +536,6 @@ TEST_F(RequestParserTest, NotEndState)
                                                  incomplete_data,
                                                  incomplete_data);
 
-    std::cerr << result << std::endl;
     EXPECT_TRUE(result == RequestParser::result_type::indeterminate);
 }
+

@@ -13,10 +13,13 @@ class RequestHandler
 public:
   RequestHandler();
   Reply process_request(bool status, char data[]);
-  RequestParser::result_type http_format_precheck(char data[], size_t bytes_transferred);
+  RequestParser::result_type http_format_precheck(const char data[], size_t bytes_transferred);
   
   // Return the request generated from http_format_precheck
   Request get_request();
+
+  // Add a new request to the handler
+  void set_request(const Request& request);
 
   // Return the content length of the request
   int get_content_length();

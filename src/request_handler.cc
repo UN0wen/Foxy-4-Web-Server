@@ -22,7 +22,8 @@ int RequestHandler::get_content_length()
 
   return 0;
 }
-RequestParser::result_type RequestHandler::http_format_precheck(char data[], size_t bytes_transferred)
+
+RequestParser::result_type RequestHandler::http_format_precheck(const char data[], size_t bytes_transferred)
 {
   RequestParser::result_type result;
   std::tie(result, std::ignore) = request_parser_.parse(request_,
@@ -43,6 +44,10 @@ RequestParser::result_type RequestHandler::http_format_precheck(char data[], siz
 Request RequestHandler::get_request()
 {
   return request_;
+}
+
+void RequestHandler::set_request(const Request& request) {
+    request_ = request;
 }
 
 Reply RequestHandler::process_request(bool status, char data[])

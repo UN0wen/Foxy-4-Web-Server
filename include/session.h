@@ -32,6 +32,4 @@ private:
   enum { max_length = 1024 };
   char data_[max_length];
   char buffer_[max_length];
-  Request request_;
-  RequestParser request_parser_;
 };
