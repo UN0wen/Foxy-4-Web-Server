@@ -55,7 +55,8 @@ struct Reply
 
   /// Get a stock reply.
   static Reply stock_reply(status_type status);
-};
 
+  static boost::asio::const_buffer status_string_accessor(status_type status);
+};
 
 #endif // HTTP_REPLY_HPP
