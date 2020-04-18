@@ -13,7 +13,7 @@ TEST_F(ReplyMessageTest, OkBuffer)
 {
   std::string expected = "HTTP/1.1 200 OK\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::ok);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -22,7 +22,7 @@ TEST_F(ReplyMessageTest, ExpectedBuffer)
 {
   std::string expected = "HTTP/1.0 201 Created\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::created);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -31,7 +31,7 @@ TEST_F(ReplyMessageTest, AcceptedBuffer)
 {
   std::string expected = "HTTP/1.0 202 Accepted\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::accepted);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -40,7 +40,7 @@ TEST_F(ReplyMessageTest, NoContentBuffer)
 {
   std::string expected = "HTTP/1.0 204 No Content\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::no_content);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -49,7 +49,7 @@ TEST_F(ReplyMessageTest, MultipleChoicesBuffer)
 {
   std::string expected = "HTTP/1.0 300 Multiple Choices\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::multiple_choices);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -58,7 +58,7 @@ TEST_F(ReplyMessageTest, MovedPermanentlyBuffer)
 {
   std::string expected = "HTTP/1.0 301 Moved Permanently\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::moved_permanently);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -67,7 +67,7 @@ TEST_F(ReplyMessageTest, MovedTemporarilyBuffer)
 {
   std::string expected = "HTTP/1.0 302 Moved Temporarily\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::moved_temporarily);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -76,7 +76,7 @@ TEST_F(ReplyMessageTest, NotModifiedBuffer)
 {
   std::string expected = "HTTP/1.0 304 Not Modified\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::not_modified);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -85,7 +85,7 @@ TEST_F(ReplyMessageTest, BadRequestBuffer)
 {
   std::string expected = "HTTP/1.1 400 Bad Request\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::bad_request);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -94,7 +94,7 @@ TEST_F(ReplyMessageTest, UnauthorizedBuffer)
 {
   std::string expected = "HTTP/1.0 401 Unauthorized\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::unauthorized);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -103,7 +103,7 @@ TEST_F(ReplyMessageTest, ForbiddenBuffer)
 {
   std::string expected = "HTTP/1.0 403 Forbidden\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::forbidden);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -112,7 +112,7 @@ TEST_F(ReplyMessageTest, NotFoundBuffer)
 {
   std::string expected = "HTTP/1.0 404 Not Found\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::not_found);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -121,7 +121,7 @@ TEST_F(ReplyMessageTest, InternalServerErrorBuffer)
 {
   std::string expected = "HTTP/1.0 500 Internal Server Error\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::internal_server_error);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -130,7 +130,7 @@ TEST_F(ReplyMessageTest, NotImplementedBuffer)
 {
   std::string expected = "HTTP/1.0 501 Not Implemented\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::not_implemented);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -139,7 +139,7 @@ TEST_F(ReplyMessageTest, BadGatewayBuffer)
 {
   std::string expected = "HTTP/1.0 502 Bad Gateway\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::bad_gateway);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
@@ -148,11 +148,10 @@ TEST_F(ReplyMessageTest, ServiceUnavailableBuffer)
 {
   std::string expected = "HTTP/1.0 503 Service Unavailable\r\n";
   boost::asio::const_buffer buffer = msg.status_string_accessor(Reply::service_unavailable);
-  const char* p = boost::asio::buffer_cast<const char*>(buffer);
+  const char *p = boost::asio::buffer_cast<const char *>(buffer);
   std::string buffer_data = std::string(p);
   EXPECT_TRUE(expected.compare(buffer_data) == 0);
 }
-
 
 TEST_F(ReplyMessageTest, OkStockReply)
 {
@@ -266,7 +265,7 @@ TEST_F(ReplyMessageTest, ForbiddenStockReply)
 
 TEST_F(ReplyMessageTest, NotFoundStockReply)
 {
-  Reply not_found = msg.stock_reply(Reply::not_found);  
+  Reply not_found = msg.stock_reply(Reply::not_found);
   bool header_zero_name = not_found.headers[0].name == "Content-Length";
   bool header_zero_val = not_found.headers[0].value == std::to_string(msg.content.size());
   bool header_one_name = not_found.headers[1].name == "Content-Type";
@@ -305,7 +304,7 @@ TEST_F(ReplyMessageTest, BadGatewayStockReply)
 }
 
 TEST_F(ReplyMessageTest, ServiceUnavailableStockReply)
-{  
+{
   Reply service_unavailable = msg.stock_reply(Reply::service_unavailable);
   bool header_zero_name = service_unavailable.headers[0].name == "Content-Length";
   bool header_zero_val = service_unavailable.headers[0].value == std::to_string(msg.content.size());
@@ -314,3 +313,40 @@ TEST_F(ReplyMessageTest, ServiceUnavailableStockReply)
   EXPECT_TRUE(header_zero_name && header_one_name && header_one_val);
 }
 
+TEST_F(ReplyMessageTest, ToBuffersWithHeader)
+{
+  msg = Reply::stock_reply(Reply::accepted);
+  std::vector<boost::asio::const_buffer> return_buffers = msg.to_buffers();
+  char sent_message[1024] = "";
+  for (auto &buffer : return_buffers)
+  {
+    const char *data = boost::asio::buffer_cast<const char *>(buffer);
+    strcat(sent_message, data);
+  }
+
+  const char expected_reply[] = "HTTP/1.0 202 Accepted\r\n\
+Content-Length: \r\n83\r\n\
+Content-Type: \r\ntext/html\r\n\r\n\
+<html><head><title>Accepted</title></head><body><h1>202 Accepted</h1></body></html>";
+
+  EXPECT_EQ(std::strcmp(sent_message, expected_reply), 0);
+}
+
+TEST_F(ReplyMessageTest, ToBuffersNoHeader)
+{
+  msg = Reply::stock_reply(Reply::accepted);
+  msg.headers.resize(0);
+  std::vector<boost::asio::const_buffer> return_buffers = msg.to_buffers();
+  
+  char sent_message[1024] = "";
+  for (auto &buffer : return_buffers)
+  {
+    const char *data = boost::asio::buffer_cast<const char *>(buffer);
+    strcat(sent_message, data);
+  }
+
+  const char expected_reply[] = "HTTP/1.0 202 Accepted\r\n\r\n\
+<html><head><title>Accepted</title></head><body><h1>202 Accepted</h1></body></html>";
+
+  EXPECT_EQ(std::strcmp(sent_message, expected_reply), 0);
+}
