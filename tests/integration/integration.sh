@@ -41,10 +41,49 @@ else
 	ERROR=1
 fi
 
+# basic bad command test
+if 	echo "test" | \
+	nc -w 1 localhost 8000 | \
+	tr "\n\r" " "| \
+	grep "HTTP/1.1 400 Bad Request" | \
+	grep "Content-Length: 5" | \
+	grep "content-type: text/plain" | \
+	grep "test" > /dev/null;
+then
+	echo "Bad request test success."
+else 
+	ERROR=1
+fi
 
 #cleanup
 pkill server
 rm integration.conf
+
+#invalid config file with no port number
+printf "" >invalid.conf
+
+$SERVER_EXECUTABLE invalid.conf
+
+if [ $? -eq 1 ]
+then
+	echo "Invalid config file test success."
+else
+	ERROR=1
+	pkill server
+	echo "Invalid config file test failed."
+fi
+
+#missing arguments 
+$SERVER_EXECUTABLE
+
+if [ $? -eq 1 ]
+then
+	echo "Missing arguments test success."
+else
+	ERROR=1
+	pkill server
+	echo "Missing arguments test failed."
+fi
 
 if [ $ERROR -eq 0 ]
 then 

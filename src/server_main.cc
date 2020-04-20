@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     }
     else {
       std::cerr << "Error: Invalid config file." << "\n";
-      return 0;
+      return 1;
     }
   }
   catch (std::exception& e)
