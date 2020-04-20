@@ -11,7 +11,7 @@ $SERVER_EXECUTABLE integration.conf &
 pid=$!
 while ps | grep "${pid}"
 do
-    echo ""
+    sleep 1
 done
 wait $pid
 status=$?
@@ -32,7 +32,7 @@ $SERVER_EXECUTABLE integration.conf &
 pid=$!
 while ps | grep "${pid}"
 do
-    echo ""
+    sleep 1
 done
 wait $pid
 status=$?
