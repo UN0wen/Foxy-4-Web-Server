@@ -73,6 +73,7 @@ gtest_discover_tests(request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOUR
 gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
 gtest_discover_tests(reply_message_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/reply_message)
 add_test(NAME integration_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
+add_test(NAME integration_config_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration_config.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
 
 include(cmake/CodeCoverageReportConfig.cmake)
 generate_coverage_report(TARGETS server server_lib session config config_parser config_statement reply request_handler Boost::system request_parser
