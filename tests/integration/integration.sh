@@ -6,7 +6,8 @@ ERROR=0
 
 printf "server {\n\tlisten   8000;\n}" >integration.conf
 
-./server integration.conf &
+SERVER_EXECUTABLE=$1
+$SERVER_EXECUTABLE integration.conf &
 
 #sleep after starting command
 sleep 1
@@ -48,8 +49,8 @@ rm integration.conf
 if [ $ERROR -eq 0 ]
 then 
 	echo "All tests finished and passed."
-	exit 1
+	exit 0
 else 
 	echo "All tests finished with some failed."
-	exit 0
+	exit 1
 fi

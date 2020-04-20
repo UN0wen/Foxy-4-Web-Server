@@ -10,6 +10,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <csignal>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
@@ -17,6 +18,12 @@
 #include "config_parser.h"
 
 using boost::asio::ip::tcp;
+
+void signal_handler( int signum ) {
+   std::cout << "Interrupt signal (" << signum << ") received.\n" << std::endl;
+
+   exit(0);  
+}
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +34,8 @@ int main(int argc, char* argv[])
     return 1;
     }
 
+    signal(SIGTERM, signal_handler);
+    signal(SIGKILL, signal_handler); 
     NginxConfigParser config_parser;
     NginxConfig config;
 
@@ -41,7 +50,7 @@ int main(int argc, char* argv[])
       Server s(io_service, port);
 
       io_service.run();
-
+ 
       std::cout << "Webserver started on port " << port << "." << std::endl;
     }
     else {
