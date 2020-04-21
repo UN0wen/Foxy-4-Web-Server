@@ -1,5 +1,6 @@
 //reference usage: https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/request_handler.cpp
 //reference usage: https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/connection.cpp
+
 #include <cstdlib>
 #include <iostream>
 #include <boost/bind.hpp>
@@ -7,7 +8,7 @@
 
 #include "session.h"
 #include "reply.h"
-
+#define BOOST_LOG_DYN_LINK 1
 Session::Session(boost::asio::io_service &io_service)
     : socket_(io_service)
 {
@@ -50,6 +51,9 @@ void Session::handle_read(const boost::system::error_code &error,
 {
   if (!error)
   {
+    //TODO: Might need to remove this. This make sure console logging works
+    BOOST_LOG_TRIVIAL(trace) << "Trace: Starts handling";
+
     std::cout << "Message received: " << data_ << std::endl;
     // Prechecking if an incoming HTTP message is valid or not
     RequestParser::result_type result = request_handler_.http_format_precheck(data_, bytes_transferred);
