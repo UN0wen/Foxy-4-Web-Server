@@ -8,8 +8,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 // reference: https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/reply.hpp
 
-#ifndef HTTP_REPLY_H
-#define HTTP_REPLY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -59,4 +58,3 @@ struct Reply
   static boost::asio::const_buffer status_string_accessor(status_type status);
 };
 
-#endif // HTTP_REPLY_HPP

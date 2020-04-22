@@ -8,6 +8,7 @@
 
 #include "session.h"
 #include "reply.h"
+#include "request.h"
 #define BOOST_LOG_DYN_LINK 1
 Session::Session(boost::asio::io_service &io_service)
     : socket_(io_service)
@@ -35,13 +36,18 @@ void Session::handle_final_read(const boost::system::error_code &error,
   full_text = (char *)malloc(strlen(buffer_) + strlen(data_) + 1);
   strcpy(full_text, data_);
   strcat(full_text, buffer_);
-  
+
+  Reply reply;
+  reply.status = Reply::ok;
+  request_.raw_request = full_text;
+
+  request_handler_.handle_request(request_, reply);
   boost::asio::async_write(socket_,
-                           request_handler_.process_request(true, full_text).to_buffers(),
+                           reply.to_buffers(),
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
 
-  std::cout << "Reply sent." << std::endl; 
+  std::cout << "Reply sent." << std::endl;
   memset(data_, 0, sizeof(data_));
   memset(buffer_, 0, sizeof(buffer_));
 }
@@ -56,20 +62,20 @@ void Session::handle_read(const boost::system::error_code &error,
 
     std::cout << "Message received: " << data_ << std::endl;
     // Prechecking if an incoming HTTP message is valid or not
-    RequestParser::result_type result = request_handler_.http_format_precheck(data_, bytes_transferred);
+    RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
 
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
     if (result == RequestParser::good)
     {
       std::cout << "HTTP format check passed, preparing reply..." << std::endl;
-
-      Request req = request_handler_.get_request();
-
+      Reply reply;
+      reply.status = Reply::ok;
+      request_handler_.handle_request(request_, reply);
       boost::asio::async_write(socket_,
-                               request_handler_.process_request(true, data_).to_buffers(),
+                               reply.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-      std::cout << "Reply sent." << std::endl;                                  
+      std::cout << "Reply sent." << std::endl;
     }
 
     // Result from HTTP request is good but the data portion is missing
@@ -77,8 +83,9 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::missing_data)
     {
       std::cout << "HTTP format check passed but message is missing data, fetching..." << std::endl;
-      int content_length = request_handler_.get_content_length();
-      socket_.async_read_some(boost::asio::buffer(buffer_, max_length),
+      int content_length = request_.get_content_length();
+
+      socket_.async_read_some(boost::asio::buffer(buffer_, content_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,
                                           boost::asio::placeholders::bytes_transferred));
@@ -87,14 +94,17 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::bad)
     {
       std::cout << "HTTP format check failed, preparing reply..." << std::endl;
+      Reply reply;
+      reply.status = Reply::bad_request;
+      request_handler_.handle_request(request_, reply);
       boost::asio::async_write(socket_,
-                               request_handler_.process_request(false, data_).to_buffers(),
+                               reply.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-      std::cout << "Reply sent." << std::endl;                                            
+      std::cout << "Reply sent." << std::endl;
     }
-    
-    if (result != RequestParser::missing_data)  
+
+    if (result != RequestParser::missing_data)
       memset(data_, 0, sizeof(data_));
   }
   else

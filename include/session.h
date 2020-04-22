@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdlib>
 #include <iostream>
 #include <boost/bind.hpp>
@@ -6,7 +8,8 @@
 
 using boost::asio::ip::tcp;
 #include "reply.h"
-#include "request_handler.h"
+#include "echo_request_handler.h"
+#include "request_parser.h"
 
 class Session
 {
@@ -28,7 +31,10 @@ private:
   void handle_write(const boost::system::error_code& error);
   Reply process_request(bool status);
   
-  RequestHandler request_handler_;
+  RequestParser request_parser_;
+  EchoRequestHandler request_handler_;
+  Request request_;
+  Reply reply_;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];

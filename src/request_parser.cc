@@ -9,7 +9,7 @@
 //
 
 #include "request_parser.h"
-#include "request.h"
+#include <string.h>
 
 RequestParser::RequestParser()
     : state_(method_start)
@@ -25,6 +25,25 @@ int RequestParser::get_char_amount()
 void RequestParser::reset()
 {
   state_ = method_start;
+}
+
+RequestParser::result_type RequestParser::parse_data(Request &request, const char data[], size_t bytes_transferred)
+{
+  RequestParser::result_type result;
+
+  request.raw_request = data;
+
+  std::tie(result, std::ignore) = parse(request, data, data + bytes_transferred);
+
+  int char_amount = get_char_amount();
+  int content_length = request.get_content_length();
+
+  if (content_length > 0 && char_amount == strlen(data))
+  {
+    return result = RequestParser::result_type::missing_data;
+  }
+
+  return result;
 }
 
 RequestParser::result_type RequestParser::consume(Request &req, char input)

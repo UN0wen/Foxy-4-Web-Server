@@ -7,11 +7,12 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#pragma once
 
 #include <tuple>
 #include <iostream>
 
-struct Request;
+#include "request.h"
 
 /// Parser for incoming requests.
 class RequestParser
@@ -24,7 +25,7 @@ public:
   void reset();
 
   int get_char_amount();
-  
+
   /// Result of parse.
   enum result_type
   {
@@ -33,6 +34,8 @@ public:
     indeterminate,
     missing_data
   };
+
+  result_type parse_data(Request &request, const char data[], size_t bytes_transferred);
 
   /// Parse some data. The enum return value is good when a complete request has
   /// been parsed, bad if the data is invalid, indeterminate when more data is

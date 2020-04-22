@@ -539,3 +539,40 @@ TEST_F(RequestParserTest, NotEndState)
     EXPECT_TRUE(result == RequestParser::result_type::indeterminate);
 }
 
+TEST_F(RequestParserTest, InvalidHttpParseTest)
+{
+    char msg[] = "hello\n";
+    RequestParser::result_type result = parser.parse_data(request, msg, 6);
+    EXPECT_TRUE(result == RequestParser::bad);
+}
+
+TEST_F(RequestParserTest, PostRequestWithData)
+{
+    RequestParser::result_type result = parser.parse_data(request, post_request, POST_REQUEST_LENGTH);
+
+    EXPECT_EQ(result, RequestParser::result_type::good);
+}
+
+TEST_F(RequestParserTest, PostRequestNoData)
+{
+    const char *data_request = "POST / HTTP/1.1\r\n\
+Accept: application/json, */*\r\n\
+Accept-Encoding: gzip, deflate\r\n\
+Connection: keep-alive\r\n\
+Content-Length: 19\r\n\
+Content-Type: application/json\r\n\
+Host: localhost:8000\r\n\
+User-Agent: HTTPie/0.9.8\r\n\r\n";
+    RequestParser::result_type result = parser.parse_data(request, data_request, POST_REQUEST_LENGTH + CONTENT_LENGTH);
+
+    EXPECT_EQ(result, RequestParser::result_type::missing_data);
+}
+
+TEST_F(RequestParserTest, EmptyData)
+{
+    const char* empty_data;
+
+    RequestParser::result_type result = parser.parse_data(request, empty_data, 0);
+
+    EXPECT_EQ(result, RequestParser::result_type::indeterminate);
+}
