@@ -10,6 +10,8 @@ using boost::asio::ip::tcp;
 #include "reply.h"
 #include "echo_request_handler.h"
 #include "request_parser.h"
+#include <boost/thread/thread.hpp>
+#include <boost/log/attributes/scoped_attribute.hpp>
 
 class Session
 {
