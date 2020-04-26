@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
   try
   {
     if (argc != 2) {
-    printf("Usage: ./config_parser <path to config file>\n");
+    printf("Usage: ./server <path to config file>\n");
     return 1;
     }
 
