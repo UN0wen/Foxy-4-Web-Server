@@ -44,8 +44,7 @@ Host: localhost:8000\r\n\r\n{'test_value': '1'}";
 TEST_F(EchoRequestHandlerTest, SendingGoodStatus)
 {
     Reply reply;
-    reply.status = Reply::ok;
-    request_handler.handle_request(request, reply);
+    request_handler.handle_request(request, reply, RequestParser::result_type::good);
     bool success_header_name = reply.headers[1].name == "content-type";
     bool success_content = reply.content == post_request;
     bool success_header_value = reply.headers[1].value == "text/plain";
@@ -58,7 +57,7 @@ TEST_F(EchoRequestHandlerTest, SendingBadStatus)
 {
     Reply reply;
     reply.status = Reply::bad_request;
-    request_handler.handle_request(request, reply);
+    request_handler.handle_request(request, reply, RequestParser::result_type::bad);
     bool bad_header_name = reply.headers[1].name == "content-type";
     bool bad_content = reply.content == post_request;
     bool bad_header_value = reply.headers[1].value == "text/plain";

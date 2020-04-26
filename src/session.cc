@@ -88,7 +88,8 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
     std::string path = it->first;
     std::string root = it->second;
     int current_length = common_prefix_length(uri, path);
-    if(longest_length < current_length){
+    if (longest_length < current_length)
+    {
       longest_match_path = path;
       longest_match_root = root;
       longest_length = current_length;
@@ -107,7 +108,8 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
     std::string path = it->first;
     std::string root = it->second;
     int current_length = common_prefix_length(uri, path);
-    if(longest_length < current_length){
+    if (longest_length < current_length)
+    {
       longest_match_path = path;
       longest_match_root = root;
       longest_length = current_length;
@@ -117,19 +119,20 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
       longest_match_path = path;
       longest_match_root = root;
       longest_length = current_length;
-      BOOST_LOG_TRIVIAL(info) << current_length;
       method = "echo";
     }
   }
   MappingType result;
-  if(method == "echo"){
+  if (method == "echo")
+  {
     EchoRequestHandler rh;
     result.rh = rh;
     result.method = method;
     result.root = longest_match_root;
   }
-  else{
-    StaticRequestHandler sh;
+  else
+  {
+    StaticRequestHandler sh(longest_match_root, longest_match_path);
     result.sh = sh;
     result.method = method;
     result.root = longest_match_root;
@@ -147,7 +150,7 @@ void Session::start()
 }
 
 void Session::handle_final_read(const boost::system::error_code &error,
-                                size_t bytes_transferred)
+                                size_t bytes_transferred, RequestHandler* request_handler)
 {
   BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
   std::string remote_ip = this->socket().remote_endpoint().address().to_string();
@@ -157,13 +160,11 @@ void Session::handle_final_read(const boost::system::error_code &error,
   strcpy(full_text, data_);
   strcat(full_text, buffer_);
 
-  Reply reply;
-  reply.status = Reply::ok;
   request_.raw_request = full_text;
 
-  request_handler_.handle_request(request_, reply);
+  request_handler->handle_request(request_, reply_, RequestParser::result_type::good);
   boost::asio::async_write(socket_,
-                           reply.to_buffers(),
+                           reply_.to_buffers(),
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
   BOOST_LOG_TRIVIAL(trace) << "Reply sent back to IP ("
@@ -184,10 +185,22 @@ void Session::handle_read(const boost::system::error_code &error,
                             << remote_ip
                             << ")...handling request";
     // Prechecking if an incoming HTTP message is valid or not
+    request_ = Request();
+    reply_ = Reply();
     RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
 
+    request_parser_.reset();
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
+    MappingType mapping = map_uri_to_request_handler(request_.uri);
 
+    RequestHandler *request_handler;
+    if (mapping.method == "static")
+    {
+      request_handler = &mapping.sh;
+    } 
+    else {
+      request_handler = &mapping.rh;
+    }
     // TODO(Nelson and Duy): Need to Log the http request type(Post and Get).
 
     if (result == RequestParser::good)
@@ -195,11 +208,10 @@ void Session::handle_read(const boost::system::error_code &error,
       BOOST_LOG_TRIVIAL(info) << "HTTP format check from IP ("
                               << remote_ip
                               << ") passed, preparing reply...";
-      Reply reply;
-      reply.status = Reply::ok;
-      request_handler_.handle_request(request_, reply);
+
+      request_handler->handle_request(request_, reply_, result);
       boost::asio::async_write(socket_,
-                               reply.to_buffers(),
+                               reply_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
       BOOST_LOG_TRIVIAL(trace) << "Reply sent back to IP ("
@@ -217,15 +229,14 @@ void Session::handle_read(const boost::system::error_code &error,
       socket_.async_read_some(boost::asio::buffer(buffer_, content_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,
-                                          boost::asio::placeholders::bytes_transferred));
+                                          boost::asio::placeholders::bytes_transferred, request_handler));
     }
     //result for http request is bad, async_write will send out http response 400 back to the client
     else if (result == RequestParser::bad)
     {
       BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing reply...";
       Reply reply;
-      reply.status = Reply::bad_request;
-      request_handler_.handle_request(request_, reply);
+      request_handler->handle_request(request_, reply, result);
       boost::asio::async_write(socket_,
                                reply.to_buffers(),
                                boost::bind(&Session::handle_write, this,

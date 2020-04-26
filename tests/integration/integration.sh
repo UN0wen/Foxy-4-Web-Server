@@ -4,7 +4,7 @@ ERROR=0
 
 #test server using integration.conf
 
-printf "server {\n\tlisten   8000;\n}" >integration.conf
+printf "listen 8000; \nserver {\n\troot /data/; \n\tpath /static/;\n\tmethod static;\n} \n server {\n\troot /echo; \n\tpath /echo;\n\tmethod echo;\n}" >integration.conf
 
 SERVER_EXECUTABLE=$1
 $SERVER_EXECUTABLE integration.conf &
@@ -13,22 +13,22 @@ $SERVER_EXECUTABLE integration.conf &
 sleep 1
 
 #basic curl test
-if  curl -s localhost:8000 | \
+if  curl -s localhost:8000/echo | \
 	tr "\n\r" " "| \
-	grep "GET / HTTP/1.1" | \
+	grep "GET /echo HTTP/1.1" | \
 	grep "Host:" | \
 	grep "User-Agent:" | \
 	grep "Accept:" > /dev/null;
 then
-	echo "	Basic curl test success."
+	echo "	Basic echo curl test success."
 else
 	ERROR=1
 fi
 
 #curl post test
-if  curl -s -d val=0 localhost:8000 | \
+if  curl -s -d val=0 localhost:8000/echo | \
 	tr "\n\r" " "| \
-	grep "POST / HTTP/1.1" | \
+	grep "POST /echo HTTP/1.1" | \
 	grep "Host:" | \
 	grep "User-Agent:" | \
 	grep "Accept:" | \

@@ -1,0 +1,12 @@
+{
+    "foxes": {
+        "kingdom": "animalia",
+        "phylum": "chordata",
+        "class": "mammalia",
+        "order": {
+            "suborder": {
+                "family": "canidae"
+            }
+        }
+    }
+}

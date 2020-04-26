@@ -2,6 +2,7 @@
 
 #include "reply.h"
 #include "request.h"
+#include "request_parser.h"
 
 class RequestHandler
 {
@@ -9,5 +10,6 @@ public:
   RequestHandler() {}
   virtual void handle_request(
       Request &request,
-      Reply &reply) = 0;
+      Reply &reply,
+      RequestParser::result_type parse_result) = 0;
 };

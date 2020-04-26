@@ -11,8 +11,9 @@ EchoRequestHandler::EchoRequestHandler()
 {
 }
 
-void EchoRequestHandler::handle_request(Request &request, Reply &reply)
+void EchoRequestHandler::handle_request(Request &request, Reply &reply, RequestParser::result_type parse_result)
 {
+  reply.status = parse_result == RequestParser::result_type::good ? Reply::ok : Reply::bad_request;
   reply.content = std::string(request.raw_request);
   reply.headers.resize(2);
   reply.headers[0].name = "Content-Length";

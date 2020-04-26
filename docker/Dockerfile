@@ -21,6 +21,9 @@ FROM ubuntu:bionic as deploy
 COPY --from=builder /usr/src/project/build/bin/server .
 COPY --from=builder /usr/src/project/config-docker/nginx.conf .
 
+# Copies data from data folder to current dir
+COPY --from=builder /usr/src/project/data ./data
+
 # TODO(drzheng): Expose some port(s)
 EXPOSE 8000
 

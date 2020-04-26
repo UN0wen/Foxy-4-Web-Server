@@ -1,5 +1,6 @@
-#include "request_handler.h"
 #pragma once
+
+#include "request_handler.h"
 
 class EchoRequestHandler : public RequestHandler
 {
@@ -8,5 +9,6 @@ public:
 
     void handle_request(
         Request &request,
-        Reply &reply);
+        Reply &reply,
+        RequestParser::result_type parse_result);
 };
