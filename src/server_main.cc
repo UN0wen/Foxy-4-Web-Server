@@ -9,6 +9,8 @@
 //
 //reference: https://www.boost.org/doc/libs/1_55_0/libs/log/example/bounded_async_log/main.cpp
 //https://www.boost.org/doc/libs/1_55_0/libs/log/example/*.cpp
+//reference: https://thispointer.com/get-current-date-time-in-c-example-using-boost-date-time-library/
+//reference: https://www.boost.org/doc/libs/1_65_0/libs/log/example/doc/tutorial_file.cpp
 
 #include <cstdlib>
 #include <iostream>
@@ -33,6 +35,7 @@ namespace expr = boost::log::expressions;
 namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace keywords = boost::log::keywords;
+namespace sinks = boost::log::sinks;
 BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger, src::logger_mt)
 using boost::asio::ip::tcp;
 
@@ -45,6 +48,8 @@ void signal_handler( int signum ) {
 
 int main(int argc, char* argv[])
 {
+  boost::posix_time::ptime timeLocal =
+			boost::posix_time::second_clock::local_time();
   BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
   logging::add_console_log(std::clog, keywords::format = expr::format("%1% [Thread-ID: %2%]: <%3%> %4%")
             % expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
@@ -52,8 +57,9 @@ int main(int argc, char* argv[])
             % logging::trivial::severity
             % expr::smessage);
   logging::add_file_log(
-    "sample1.log", 
+    to_simple_string(timeLocal.date()) + ".log", 
     keywords::auto_flush = true, 
+    keywords::time_based_rotation = sinks::file::rotation_at_time_point(7, 0, 0),
     keywords::rotation_size = 10 * 1024 * 1024, 
     keywords::format =
         (
