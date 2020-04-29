@@ -37,18 +37,42 @@ tcp::socket &Session::socket()
 }
 
 int Session::common_prefix_length(std::string a, std::string b){
+  std::vector<std::string> v1;
+  std::vector<std::string> v2;
   char s1[a.size()+1];
   char s2[b.size()+1];
   strcpy(s1, a.c_str());
-  strcpy(s2, a.c_str());
+  strcpy(s2, b.c_str());
+  std::string x = "";
+  for(int i = 0; i < strlen(s1); i++){
+    if(s1[i] == '/'){
+      v1.push_back(x);
+      x = "";
+      continue;
+    }
+    x.push_back(s1[i]);
+  }
+
+  v1.push_back(x);
+  x = "";
+  for(int i = 0; i < strlen(s2); i++){
+    if(s2[i] == '/'){
+      v2.push_back(x);
+      x = "";
+      continue;
+    }
+    x.push_back(s2[i]);
+  }
+  v2.push_back(x);
+  std::vector<std::string>::iterator it_1 = v1.begin();
+  std::vector<std::string>::iterator it_2 = v2.begin();
   int counter = 0;
-  for(int i = 0; i < a.size()+1; i++){
-    if(s1[i] == s2[i]){
+  while(it_2!=v2.end()){
+    if(*it_2 == *it_1){
       counter ++;
     }
-    else{
-      break;
-    }
+    it_2 ++;
+    it_1 ++;
   }
   return counter;
 }
@@ -57,7 +81,7 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
 {
   std::string longest_match_root;
   std::string longest_match_path;
-  int longest_length;
+  int longest_length = 0;
   std::string method;
   for (std::map<std::string, std::string>::iterator it = path_to_root.begin(); it != path_to_root.end(); ++it)
   {
@@ -70,6 +94,13 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
       longest_length = current_length;
       method = "static";
     }
+     if(longest_length == current_length && path.length() < longest_match_path.length()){
+      longest_match_path = path;
+      longest_match_root = root;
+      longest_length = current_length;
+      method = "static";
+    }
+
   }
   for (std::map<std::string, std::string>::iterator it = path_to_root_echo.begin(); it != path_to_root_echo.end(); ++it)
   {
@@ -80,6 +111,13 @@ Session::MappingType Session::map_uri_to_request_handler(std::string uri)
       longest_match_path = path;
       longest_match_root = root;
       longest_length = current_length;
+      method = "echo";
+    }
+     if(longest_length == current_length && path.length() < longest_match_path.length()){
+      longest_match_path = path;
+      longest_match_root = root;
+      longest_length = current_length;
+      BOOST_LOG_TRIVIAL(info) << current_length;
       method = "echo";
     }
   }
