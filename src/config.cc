@@ -59,3 +59,35 @@ bool NginxConfig::GetPort(int* port) {
   }
   return false;
 }
+
+void NginxConfig::GetMap() {
+  for(const auto& statement : statements_) {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
+							statement->tokens_.end(),
+							"server");
+    if(find != statement->tokens_.end())
+      {
+	std::string path, root;
+	for(const auto& s : statement->child_block_->statements_) {
+	  std::vector<std::string>::iterator find_path = std::find(s->tokens_.begin(),
+								   s->tokens_.end(),
+								   "path");
+	  std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
+								   s->tokens_.end(),
+								   "root");
+	  if(find_path != s->tokens_.end() &&
+	     find_path != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
+	    {
+	      path = *(find_path + 1);
+	    }
+
+	  if(find_root != s->tokens_.end() &&
+	     find_root != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
+	    {
+	      root = *(find_root + 1);
+	    }
+	}
+	this->root_to_path_map.insert(std::pair<std::string, std::string>(path, root));
+      }
+  }
+}

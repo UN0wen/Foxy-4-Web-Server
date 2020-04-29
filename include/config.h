@@ -5,6 +5,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "request_handler.h"
+
+struct PathToRoot {
+  std::string root;
+  std::string path;
+};
 
 class NginxConfig;
 
@@ -22,5 +28,8 @@ class NginxConfig {
   std::string ToString(int depth = 0);
   //gets the port number specified in nginx file
   bool GetPort(int* port);
+  void GetMap();
+  std::map<std::string, std::string> root_to_path_map;
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
+  
 };

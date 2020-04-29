@@ -25,6 +25,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <thread>
+#include <map>
 
 #include "server.h"
 #include "config_parser.h"
@@ -88,7 +89,8 @@ int main(int argc, char* argv[])
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
-
+      config.GetMap();
+      std::map<std::string, std::string> root_path = config.root_to_path_map;
       Server s(io_service, port);
       io_service.run();
     }

@@ -5,7 +5,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <list>
 #include "config.h"
+
 
 // The driver that parses a config file and generates an NginxConfig.
 class NginxConfigParser {

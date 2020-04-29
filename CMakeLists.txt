@@ -48,6 +48,7 @@ add_library(config_parser src/config_parser.cc)
 add_library(request_parser src/request_parser.cc)
 add_library(echo_request_handler src/echo_request_handler.cc)
 
+
 target_link_libraries(config config_statement)
 target_link_libraries(config_parser config)
 
@@ -64,8 +65,8 @@ add_executable(reply_message_test tests/reply_message/reply_message_test.cc)
 add_executable(request_test tests/request/request_test.cc)
 
 target_link_libraries(request_test gtest_main)
-target_link_libraries(config_test config_parser gtest_main)
-target_link_libraries(config_parser_test config config_parser config_statement gtest_main)
+target_link_libraries(config_test config_parser gtest_main Boost::system)
+target_link_libraries(config_parser_test config config_parser config_statement gtest_main Boost::system)
 target_link_libraries(echo_request_handler_test echo_request_handler gtest_main Boost::system)
 target_link_libraries(request_parser_test request_parser gtest_main Boost::system)
 target_link_libraries(reply_message_test reply gtest_main Boost::system)
