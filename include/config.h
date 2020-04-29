@@ -27,10 +27,8 @@ class NginxConfig {
  public:
   std::string ToString(int depth = 0);
   //gets the port number specified in nginx file
-  bool GetPort(int* port);
-  void GetMap();
-  std::map<std::string, std::string> root_to_path_map;
-  std::map<std::string, std::string> root_to_path_map_echo;
+  bool get_port(int* port);
+  std::map<std::string, std::shared_ptr<RequestHandler>> get_map();
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   
 };

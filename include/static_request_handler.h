@@ -22,6 +22,7 @@ private:
     std::string get_extension(const std::string &request_path);
     bool replace_path(std::string &request_path);
 
+private:
     std::string root_;
     std::string path_;
 };

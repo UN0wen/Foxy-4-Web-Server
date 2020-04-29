@@ -9,11 +9,11 @@ protected:
    int port;
 };
 
-//Tests for GetPort Function
+//Tests for get_port Function
 
 TEST_F(ConfigTest, SimpleConfig) {
   parser.Parse("simple_config", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   bool success_value = false;
   if(success) {
    success_value = (port == 8000);
@@ -23,7 +23,7 @@ TEST_F(ConfigTest, SimpleConfig) {
 
 TEST_F(ConfigTest, BlockConfig) {
   parser.Parse("block", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   bool success_value = false;
   if(success) {
    success_value = (port == 8000);
@@ -33,7 +33,7 @@ TEST_F(ConfigTest, BlockConfig) {
 
 TEST_F(ConfigTest, BasicConfig) {
   parser.Parse("example_config", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   bool success_value = false;
   if(success) {
    success_value = (port == 8000);
@@ -44,41 +44,41 @@ TEST_F(ConfigTest, BasicConfig) {
 
 TEST_F(ConfigTest, NoPortConfig) {
   parser.Parse("no_port", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if no port is found (no listen keyword)
+} //get_port should return false if no port is found (no listen keyword)
 
 TEST_F(ConfigTest, NoPortNumConfig) {
   parser.Parse("no_port_num", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if no port number is found after the listen keyword
+} //get_port should return false if no port number is found after the listen keyword
 
 TEST_F(ConfigTest, InvalidPortConfig) {
   parser.Parse("invalid_port", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if the token after the listen keyword is not numeric
+} //get_port should return false if the token after the listen keyword is not numeric
 
 TEST_F(ConfigTest, InvalidPortStatementBeforeConfig) {
   parser.Parse("invalid_port_statement_before", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if there are any tokens before the listen
+} //get_port should return false if there are any tokens before the listen
   //keyword in the same statement
 
 TEST_F(ConfigTest, InvalidPortStatementAfterConfig) {
   parser.Parse("invalid_port_statement_after", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if there are any tokens after the port number
+} //get_port should return false if there are any tokens after the port number
   //token in the same statement
 
 TEST_F(ConfigTest, InvalidPortStatementBetweenConfig) {
   parser.Parse("invalid_port_statement_between", &out_config);
-  bool success = out_config.GetPort(&port);
+  bool success = out_config.get_port(&port);
   EXPECT_FALSE(success);
-} //GetPort should return false if there are any tokens in between the listen
+} //get_port should return false if there are any tokens in between the listen
   //keyword and the port number
 
 //ToString function sanity checks

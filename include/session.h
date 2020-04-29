@@ -14,7 +14,7 @@ using boost::asio::ip::tcp;
 #include <boost/thread/thread.hpp>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "request_handler.h"
-#include "static_request_handler.h"
+#include "request_handler_generator.h"
 #include <map>
 
 
@@ -22,15 +22,7 @@ class Session
 {
 public:
 
-  struct MappingType {
-    EchoRequestHandler rh;
-    StaticRequestHandler sh;
-    std::string method;
-    std::string root;
-    MappingType(){};
-  };
-
-  Session(boost::asio::io_service& io_service, std::map<std::string, std::string> path_to_root, std::map<std::string, std::string> path_to_root_echo);
+  Session(boost::asio::io_service& io_service, RequestHandlerGenerator generator);
   tcp::socket& socket();
 
   void start();
@@ -46,17 +38,12 @@ private:
   void handle_write(const boost::system::error_code& error);
   Reply process_request(bool status);
 
-  int common_prefix_length(std::string a, std::string b);
-  MappingType map_uri_to_request_handler(std::string uri);
   RequestParser request_parser_;
-  StaticRequestHandler request_handler_  = StaticRequestHandler("/data", "/static");;
   Request request_;
   Reply reply_;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];
   char buffer_[max_length];
-  std::map<std::string, std::string> path_to_root;
-  std::map<std::string, std::string> path_to_root_echo;
-
+  RequestHandlerGenerator generator_;
 };

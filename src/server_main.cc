@@ -91,15 +91,14 @@ int main(int argc, char* argv[])
     int port;
 
     bool parse_success = config_parser.Parse(argv[1], &config);
-    bool get_port = config.GetPort(&port);
+    bool get_port = config.get_port(&port);
     if(parse_success && get_port) {
+      RequestHandlerGenerator generator(config.get_map());
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
-      config.GetMap();
-      std::map<std::string, std::string> root_path = config.root_to_path_map;
-      std::map<std::string, std::string> root_path_echo = config.root_to_path_map_echo;
-      Server s(io_service, port, root_path, root_path_echo);
+
+      Server s(io_service, port, generator);
       io_service.run();
     }
     else {

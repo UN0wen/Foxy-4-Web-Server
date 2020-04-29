@@ -14,7 +14,7 @@ class Server
 {
 
 public:
-    Server(boost::asio::io_service &io_service, short port, std::map<std::string, std::string> path_to_root, std::map<std::string, std::string> path_to_root_echo);
+    Server(boost::asio::io_service &io_service, short port, RequestHandlerGenerator generator);
 
 private:
     void start_accept();
@@ -24,6 +24,5 @@ private:
 
     boost::asio::io_service &io_service_;
     tcp::acceptor acceptor_;
-    std::map<std::string, std::string> path_to_root;
-    std::map<std::string, std::string> path_to_root_echo;
+    RequestHandlerGenerator generator_;
 };

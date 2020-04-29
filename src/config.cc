@@ -17,7 +17,8 @@
 #include <algorithm>
 
 #include "config_parser.h"
-
+#include "static_request_handler.h"
+#include "echo_request_handler.h"
 std::string NginxConfig::ToString(int depth)
 {
   std::string serialized_config;
@@ -28,7 +29,7 @@ std::string NginxConfig::ToString(int depth)
   return serialized_config;
 }
 
-/*Prototype GetPort() function, kind of hacky and needs adjustments.
+/*Prototype get_port() function, kind of hacky and needs adjustments.
 
   Currently returns the first port number found in the first server
   block and assumes correct format was given from NginxConfig.Parse().
@@ -36,7 +37,7 @@ std::string NginxConfig::ToString(int depth)
   May want to incorporate catching multiple ports if multiple server 
   blocks are required later.
 */
-bool NginxConfig::GetPort(int *port)
+bool NginxConfig::get_port(int *port)
 {
   //bfs through config blocks
   for (const auto &statement : statements_)
@@ -62,14 +63,15 @@ bool NginxConfig::GetPort(int *port)
     }
     if (statement->child_block_.get() != nullptr)
     {
-      return statement->child_block_->GetPort(port);
+      return statement->child_block_->get_port(port);
     };
   }
   return false;
 }
 
-void NginxConfig::GetMap()
+std::map<std::string, std::shared_ptr<RequestHandler>> NginxConfig::get_map()
 {
+  std::map<std::string, std::shared_ptr<RequestHandler>> map;
   for (const auto &statement : statements_)
   {
     std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
@@ -108,12 +110,15 @@ void NginxConfig::GetMap()
       }
       if (method == "static")
       {
-        this->root_to_path_map.insert(std::pair<std::string, std::string>(path, root));
+        map.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new StaticRequestHandler(root, path)));
       }
       else
       {
-        this->root_to_path_map_echo.insert(std::pair<std::string, std::string>(path, root));
+        EchoRequestHandler request_handler;
+        map.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new EchoRequestHandler()));
       }
     }
   }
+
+  return map;
 }
