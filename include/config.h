@@ -30,6 +30,7 @@ class NginxConfig {
   bool GetPort(int* port);
   void GetMap();
   std::map<std::string, std::string> root_to_path_map;
+  std::map<std::string, std::string> root_to_path_map_echo;
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   
 };

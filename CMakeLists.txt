@@ -47,6 +47,7 @@ add_library(config src/config.cc)
 add_library(config_parser src/config_parser.cc)
 add_library(request_parser src/request_parser.cc)
 add_library(echo_request_handler src/echo_request_handler.cc)
+add_library(static_request_handler src/static_request_handler.cc)
 
 
 target_link_libraries(config config_statement)
@@ -55,7 +56,7 @@ target_link_libraries(config_parser config)
 
 # joshua: Update executable name, srcs, and deps
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib session config config_parser config_statement reply echo_request_handler Boost::system request_parser Boost::log_setup Boost::log)
+target_link_libraries(server server_lib session config config_parser config_statement reply echo_request_handler static_request_handler Boost::system request_parser Boost::log_setup Boost::log)
 
 add_executable(config_test tests/config/config_test.cc)
 add_executable(config_parser_test tests/config_parser/config_parser_test.cc)

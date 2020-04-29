@@ -19,11 +19,15 @@
 #include "session.h"
 #include "reply.h"
 #include "request.h"
+#include "static_request_handler.h"
+#include "echo_request_handler.h"
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
 
-Session::Session(boost::asio::io_service &io_service)
-    : socket_(io_service)
+Session::Session(boost::asio::io_service &io_service, std::map<std::string, std::string> path_to_root, std::map<std::string, std::string> path_to_root_echo)
+    : socket_(io_service),
+      path_to_root(path_to_root),
+      path_to_root_echo(path_to_root_echo)
 {
 }
 
@@ -32,9 +36,72 @@ tcp::socket &Session::socket()
   return socket_;
 }
 
+int Session::common_prefix_length(std::string a, std::string b){
+  char s1[a.size()+1];
+  char s2[b.size()+1];
+  strcpy(s1, a.c_str());
+  strcpy(s2, a.c_str());
+  int counter = 0;
+  for(int i = 0; i < a.size()+1; i++){
+    if(s1[i] == s2[i]){
+      counter ++;
+    }
+    else{
+      break;
+    }
+  }
+  return counter;
+}
+
+Session::MappingType Session::map_uri_to_request_handler(std::string uri)
+{
+  std::string longest_match_root;
+  std::string longest_match_path;
+  int longest_length;
+  std::string method;
+  for (std::map<std::string, std::string>::iterator it = path_to_root.begin(); it != path_to_root.end(); ++it)
+  {
+    std::string path = it->first;
+    std::string root = it->second;
+    int current_length = common_prefix_length(uri, path);
+    if(longest_length < current_length){
+      longest_match_path = path;
+      longest_match_root = root;
+      longest_length = current_length;
+      method = "static";
+    }
+  }
+  for (std::map<std::string, std::string>::iterator it = path_to_root_echo.begin(); it != path_to_root_echo.end(); ++it)
+  {
+    std::string path = it->first;
+    std::string root = it->second;
+    int current_length = common_prefix_length(uri, path);
+    if(longest_length < current_length){
+      longest_match_path = path;
+      longest_match_root = root;
+      longest_length = current_length;
+      method = "echo";
+    }
+  }
+  MappingType result;
+  if(method == "echo"){
+    EchoRequestHandler rh;
+    result.rh = rh;
+    result.method = method;
+    result.root = longest_match_root;
+  }
+  else{
+    StaticRequestHandler sh;
+    result.sh = sh;
+    result.method = method;
+    result.root = longest_match_root;
+  }
+  return result;
+}
+
 void Session::start()
 {
-  
+
   socket_.async_read_some(boost::asio::buffer(data_, max_length),
                           boost::bind(&Session::handle_read, this,
                                       boost::asio::placeholders::error,
@@ -62,8 +129,8 @@ void Session::handle_final_read(const boost::system::error_code &error,
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
   BOOST_LOG_TRIVIAL(trace) << "Reply sent back to IP ("
-                               << remote_ip
-                               << ") successfully!";
+                           << remote_ip
+                           << ") successfully!";
   memset(data_, 0, sizeof(data_));
   memset(buffer_, 0, sizeof(buffer_));
 }
@@ -75,21 +142,21 @@ void Session::handle_read(const boost::system::error_code &error,
   std::string remote_ip = this->socket().remote_endpoint().address().to_string();
   if (!error)
   {
-    BOOST_LOG_TRIVIAL(info) << "Message received from IP address (" 
-                             << remote_ip 
-                             << ")...handling request";
+    BOOST_LOG_TRIVIAL(info) << "Message received from IP address ("
+                            << remote_ip
+                            << ")...handling request";
     // Prechecking if an incoming HTTP message is valid or not
     RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
 
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
 
-    // TODO(Nelson and Duy): Need to Log the http request type(Post and Get). 
+    // TODO(Nelson and Duy): Need to Log the http request type(Post and Get).
 
     if (result == RequestParser::good)
     {
       BOOST_LOG_TRIVIAL(info) << "HTTP format check from IP ("
-                               << remote_ip
-                               << ") passed, preparing reply...";
+                              << remote_ip
+                              << ") passed, preparing reply...";
       Reply reply;
       reply.status = Reply::ok;
       request_handler_.handle_request(request_, reply);
@@ -117,7 +184,7 @@ void Session::handle_read(const boost::system::error_code &error,
     //result for http request is bad, async_write will send out http response 400 back to the client
     else if (result == RequestParser::bad)
     {
-      BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip <<"), preparing reply...";
+      BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing reply...";
       Reply reply;
       reply.status = Reply::bad_request;
       request_handler_.handle_request(request_, reply);

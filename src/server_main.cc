@@ -91,7 +91,8 @@ int main(int argc, char* argv[])
       boost::asio::io_service io_service;
       config.GetMap();
       std::map<std::string, std::string> root_path = config.root_to_path_map;
-      Server s(io_service, port);
+      std::map<std::string, std::string> root_path_echo = config.root_to_path_map_echo;
+      Server s(io_service, port, root_path, root_path_echo);
       io_service.run();
     }
     else {

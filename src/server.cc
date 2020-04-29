@@ -5,9 +5,11 @@
 
 #include "server.h"
 
-Server::Server(boost::asio::io_service &io_service, short port)
+Server::Server(boost::asio::io_service &io_service, short port, std::map<std::string, std::string> path_to_root, std::map<std::string, std::string> path_to_root_echo)
     : io_service_(io_service),
-      acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+      acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
+      path_to_root(path_to_root),
+      path_to_root_echo(path_to_root_echo)
 {
     start_accept();
 }
@@ -15,7 +17,7 @@ Server::Server(boost::asio::io_service &io_service, short port)
 
 void Server::start_accept()
 {
-    Session *new_session = new Session(io_service_);
+    Session *new_session = new Session(io_service_, path_to_root, path_to_root_echo);
     acceptor_.async_accept(new_session->socket(),
                            boost::bind(&Server::handle_accept, this, new_session,
                                        boost::asio::placeholders::error));

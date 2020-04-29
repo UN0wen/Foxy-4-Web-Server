@@ -18,9 +18,11 @@
 
 #include "config_parser.h"
 
-std::string NginxConfig::ToString(int depth) {
+std::string NginxConfig::ToString(int depth)
+{
   std::string serialized_config;
-  for (const auto& statement : statements_) {
+  for (const auto &statement : statements_)
+  {
     serialized_config.append(statement->ToString(depth));
   }
   return serialized_config;
@@ -34,60 +36,84 @@ std::string NginxConfig::ToString(int depth) {
   May want to incorporate catching multiple ports if multiple server 
   blocks are required later.
 */
-bool NginxConfig::GetPort(int* port) {
+bool NginxConfig::GetPort(int *port)
+{
   //bfs through config blocks
-  for (const auto& statement : statements_) {
-    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(), 
-                                                        statement->tokens_.end(), 
+  for (const auto &statement : statements_)
+  {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
+                                                        statement->tokens_.end(),
                                                         "listen");
     if (find != statement->tokens_.end() &&
-      find != std::prev(statement->tokens_.end()) &&
-      statement->tokens_.size() == 2) {
+        find != std::prev(statement->tokens_.end()) &&
+        statement->tokens_.size() == 2)
+    {
 
-      std::string portstring = *(find+1);
-  	  if(portstring.find_first_not_of("0123456789") == std::string::npos) {
-	    *port = std::stoi(portstring);
-	    return true;
-	  }
-	  else { //token after listen is not numeric
-	  	return false;
-	  }
+      std::string portstring = *(find + 1);
+      if (portstring.find_first_not_of("0123456789") == std::string::npos)
+      {
+        *port = std::stoi(portstring);
+        return true;
+      }
+      else
+      { //token after listen is not numeric
+        return false;
+      }
     }
-    if (statement->child_block_.get() != nullptr) {
+    if (statement->child_block_.get() != nullptr)
+    {
       return statement->child_block_->GetPort(port);
     };
   }
   return false;
 }
 
-void NginxConfig::GetMap() {
-  for(const auto& statement : statements_) {
+void NginxConfig::GetMap()
+{
+  for (const auto &statement : statements_)
+  {
     std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
-							statement->tokens_.end(),
-							"server");
-    if(find != statement->tokens_.end())
+                                                        statement->tokens_.end(),
+                                                        "server");
+    if (find != statement->tokens_.end())
+    {
+      std::string path, root, method;
+      for (const auto &s : statement->child_block_->statements_)
       {
-	std::string path, root;
-	for(const auto& s : statement->child_block_->statements_) {
-	  std::vector<std::string>::iterator find_path = std::find(s->tokens_.begin(),
-								   s->tokens_.end(),
-								   "path");
-	  std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
-								   s->tokens_.end(),
-								   "root");
-	  if(find_path != s->tokens_.end() &&
-	     find_path != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
-	    {
-	      path = *(find_path + 1);
-	    }
+        std::vector<std::string>::iterator find_path = std::find(s->tokens_.begin(),
+                                                                 s->tokens_.end(),
+                                                                 "path");
+        std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
+                                                                 s->tokens_.end(),
+                                                                 "root");
+        std::vector<std::string>::iterator find_method = std::find(s->tokens_.begin(),
+                                                                   s->tokens_.end(),
+                                                                   "method");
+        if (find_path != s->tokens_.end() &&
+            find_path != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
+        {
+          path = *(find_path + 1);
+        }
 
-	  if(find_root != s->tokens_.end() &&
-	     find_root != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
-	    {
-	      root = *(find_root + 1);
-	    }
-	}
-	this->root_to_path_map.insert(std::pair<std::string, std::string>(path, root));
+        if (find_root != s->tokens_.end() &&
+            find_root != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
+        {
+          root = *(find_root + 1);
+        }
+        if (find_method != s->tokens_.end() &&
+            find_method != std::prev(s->tokens_.end()) && s->tokens_.size() == 2)
+        {
+          method = *(find_method + 1);
+        }
       }
+      if (method == "static")
+      {
+        this->root_to_path_map.insert(std::pair<std::string, std::string>(path, root));
+      }
+      else
+      {
+        this->root_to_path_map_echo.insert(std::pair<std::string, std::string>(path, root));
+      }
+    }
   }
 }
