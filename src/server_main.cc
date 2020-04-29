@@ -57,7 +57,8 @@ int main(int argc, char* argv[])
             % logging::trivial::severity
             % expr::smessage);
   logging::add_file_log(
-    to_simple_string(timeLocal.date()) + ".log", 
+			to_simple_string(timeLocal.date()) +
+			to_simple_string(timeLocal.time_of_day()) + ".log", 
     keywords::auto_flush = true, 
     keywords::time_based_rotation = sinks::file::rotation_at_time_point(7, 0, 0),
     keywords::rotation_size = 10 * 1024 * 1024, 
