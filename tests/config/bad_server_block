@@ -1,0 +1,5 @@
+server {
+  method double invalid;
+  path invalid;
+  root invalid;
+}

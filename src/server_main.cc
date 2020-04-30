@@ -89,11 +89,13 @@ int main(int argc, char* argv[])
     NginxConfig config;
 
     int port;
+    std::map<std::string, std::shared_ptr<RequestHandler>> mapping;
 
     bool parse_success = config_parser.Parse(argv[1], &config);
     bool get_port = config.get_port(&port);
-    if(parse_success && get_port) {
-      RequestHandlerGenerator generator(config.get_map());
+    bool get_map = config.get_map(&mapping);
+    if(parse_success && get_port && get_map) {
+      RequestHandlerGenerator generator(mapping);
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
@@ -102,7 +104,7 @@ int main(int argc, char* argv[])
       io_service.run();
     }
     else {
-      BOOST_LOG_TRIVIAL(error) << "Config was parsed unsuccessfully";
+      BOOST_LOG_TRIVIAL(error) << "Invalid Config";
       return 1;
     }
   }

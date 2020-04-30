@@ -7,9 +7,24 @@ protected:
    NginxConfigParser parser;
    NginxConfig out_config;
    int port;
+   std::map<std::string, std::shared_ptr<RequestHandler>> mapping;
 };
 
-//Tests for get_port Function
+//Tests for get_map function
+
+TEST_F(ConfigTest, EmptyServerBlockConfig) {
+  parser.Parse("empty_server_block", &out_config);
+  bool success = out_config.get_map(&mapping);
+  EXPECT_FALSE(success);
+}
+
+TEST_F(ConfigTest, BadServerBlockConfig) {
+  parser.Parse("bad_server_block", &out_config);
+  bool success = out_config.get_map(&mapping);
+  EXPECT_FALSE(success);
+}
+
+//Tests for get_port function
 
 TEST_F(ConfigTest, SimpleConfig) {
   parser.Parse("simple_config", &out_config);
