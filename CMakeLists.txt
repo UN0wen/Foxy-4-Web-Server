@@ -67,6 +67,7 @@ add_executable(static_request_handler_test tests/static_request_handler/static_r
 add_executable(request_parser_test tests/request_parser/request_parser_test.cc)
 add_executable(reply_message_test tests/reply_message/reply_message_test.cc)
 add_executable(request_test tests/request/request_test.cc)
+add_executable(request_handler_generator_test tests/request_handler_generator/request_handler_generator_test.cc)
 
 target_link_libraries(request_test gtest_main)
 target_link_libraries(config_test config_parser gtest_main Boost::system)
@@ -75,6 +76,8 @@ target_link_libraries(echo_request_handler_test echo_request_handler gtest_main 
 target_link_libraries(static_request_handler_test static_request_handler mime_types reply gtest_main Boost::system Boost::log)
 target_link_libraries(request_parser_test request_parser gtest_main Boost::system)
 target_link_libraries(reply_message_test reply gtest_main Boost::system)
+target_link_libraries(request_handler_generator_test request_handler_generator echo_request_handler static_request_handler config config_parser gtest_main Boost::system Boost::log)
+
 
 gtest_discover_tests(config_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config)
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
@@ -83,8 +86,9 @@ gtest_discover_tests(static_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRE
 gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
 gtest_discover_tests(reply_message_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/reply_message)
 gtest_discover_tests(request_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request)
+gtest_discover_tests(request_handler_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler_generator)
 add_test(NAME integration_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
 
 include(cmake/CodeCoverageReportConfig.cmake)
 generate_coverage_report(TARGETS server server_lib session config config_parser config_statement reply static_request_handler echo_request_handler Boost::system request_parser
-  TESTS config config_parser_test config_statement config_test config_parser_test static_request_handler_test request_parser_test reply_message_test echo_request_handler_test request_test)
+  TESTS config config_parser_test config_statement config_test config_parser_test static_request_handler_test request_parser_test reply_message_test echo_request_handler_test request_test request_handler_generator_test)
