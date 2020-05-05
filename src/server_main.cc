@@ -19,13 +19,13 @@
 #include <boost/asio.hpp>
 #include <boost/move/utility_core.hpp>
 #include <boost/log/sources/logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/utility/setup/formatter_parser.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/setup/console.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/settings.hpp>
+#include <boost/log/utility/setup/from_settings.hpp>
 #include <thread>
 #include <map>
 
@@ -39,52 +39,55 @@ namespace sinks = boost::log::sinks;
 BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger, src::logger_mt)
 using boost::asio::ip::tcp;
 
-
-void signal_handler( int signum ) {
-   BOOST_LOG_TRIVIAL(fatal) << "Server terminated successfully with interrupt signal: " << signum;
-   exit(0);  
+void signal_handler(int signum)
+{
+  BOOST_LOG_TRIVIAL(fatal) << "Server terminated successfully with interrupt signal: " << signum;
+  exit(0);
 }
 
-
-int main(int argc, char* argv[])
+void init_logging()
 {
-  boost::posix_time::ptime timeLocal =
-			boost::posix_time::second_clock::local_time();
-  BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
-  logging::add_console_log(std::clog, keywords::format = expr::format("%1% [Thread-ID: %2%]: <%3%> %4%")
-            % expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-            % expr::attr< boost::thread::id >("ThreadID")
-            % logging::trivial::severity
-            % expr::smessage);
-  logging::add_file_log(
-			to_simple_string(timeLocal.date()) +
-			to_simple_string(timeLocal.time_of_day()) + ".log", 
-    keywords::auto_flush = true, 
-    keywords::time_based_rotation = sinks::file::rotation_at_time_point(7, 0, 0),
-    keywords::rotation_size = 10 * 1024 * 1024, 
-    keywords::format =
-        (
-           expr::format("lineID:%1% %2% [Thread-ID: %3%]: <%4%> %5%")
-            % expr::attr< unsigned int >("LineID")
-            % expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-            % expr::attr< boost::thread::id >("ThreadID")
-            % logging::trivial::severity
-            % expr::smessage
-        )
-    );
   logging::add_common_attributes();
-  src::logger_mt& lg = my_logger::get();
+  logging::settings log_settings;
+
+  log_settings["Core"]["DisableLogging"] = false;
   
+  // Console
+  log_settings["Sinks.Console"]["Destination"] = "Console";
+  log_settings["Sinks.Console"]["AutoFlush"] = true;
+  log_settings["Sinks.Console"]["Format"] = "%TimeStamp% [Thread-ID: %ThreadID%]: <%Severity%> %Message%";
+
+  // File
+  log_settings["Sinks.File"]["RotationSize"] = 10 * 1024 * 1024;
+  log_settings["Sinks.File"]["AutoFlush"] = true;
+  log_settings["Sinks.File"]["Destination"] = "TextFile";
+  log_settings["Sinks.File"]["Format"] = "LineID:%LineID% %TimeStamp% [Thread-ID: %ThreadID%]: <%Severity%> %Message%";
+  log_settings["Sinks.File"]["RotationTimePoint"] = "07:00:00";
+  // Extended ISO format: Year-month-day time-timezone
+  log_settings["Sinks.File"]["FileName"] = "%Y-%m-%d %H:%M:%S%F%Q.log";
+
+  logging::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
+  logging::register_simple_formatter_factory< boost::thread::id, char >("ThreadID");
+  BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
+  logging::init_from_settings(log_settings);
+  src::logger_mt& lg = my_logger::get();
+}
+
+int main(int argc, char *argv[])
+{
+  init_logging();
+
   try
   {
-    if (argc != 2) {
-    printf("Usage: ./server <path to config file>\n");
-    return 1;
+    if (argc != 2)
+    {
+      printf("Usage: ./server <path to config file>\n");
+      return 1;
     }
 
     signal(SIGTERM, signal_handler);
     signal(SIGKILL, signal_handler);
-    signal(SIGINT, signal_handler);  
+    signal(SIGINT, signal_handler);
     NginxConfigParser config_parser;
     NginxConfig config;
 
@@ -94,7 +97,8 @@ int main(int argc, char* argv[])
     bool parse_success = config_parser.Parse(argv[1], &config);
     bool get_port = config.get_port(&port);
     bool get_map = config.get_map(&mapping);
-    if(parse_success && get_port && get_map) {
+    if (parse_success && get_port && get_map)
+    {
       RequestHandlerGenerator generator(mapping);
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
@@ -103,12 +107,13 @@ int main(int argc, char* argv[])
       Server s(io_service, port, generator);
       io_service.run();
     }
-    else {
+    else
+    {
       BOOST_LOG_TRIVIAL(error) << "Invalid Config";
       return 1;
     }
   }
-  catch (std::exception& e)
+  catch (std::exception &e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
   }
