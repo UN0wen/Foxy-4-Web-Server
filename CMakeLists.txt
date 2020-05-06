@@ -54,6 +54,7 @@ add_library(mime_types src/mime_types.cc)
 target_link_libraries(static_request_handler Boost::log reply mime_types)
 target_link_libraries(config config_statement echo_request_handler static_request_handler)
 target_link_libraries(config_parser config)
+target_link_libraries(request_handler_generator Boost::log)
 
 # joshua: Update executable name, srcs, and deps
 add_executable(server src/server_main.cc)

@@ -82,9 +82,9 @@ void Session::handle_read(const boost::system::error_code &error,
     request_ = Request();
     reply_ = Reply();
     RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
-
+    BOOST_LOG_TRIVIAL(warning) << "Request Parser finish parsing request (" << remote_ip << ")";
     RequestHandler *request_handler = generator_.dispatch_handler(request_.uri).get();
-
+    BOOST_LOG_TRIVIAL(warning) << "Request handler generator finish assigning specific request handler(" << remote_ip << ")";
     request_parser_.reset();
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
 
@@ -112,7 +112,6 @@ void Session::handle_read(const boost::system::error_code &error,
     {
       BOOST_LOG_TRIVIAL(info) << "HTTP format check for IP (" << remote_ip << ")passed but message is missing data, fetching...";
       int content_length = request_.get_content_length();
-
       socket_.async_read_some(boost::asio::buffer(buffer_, content_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,

@@ -70,6 +70,7 @@ void StaticRequestHandler::handle_request(Request &request, Reply &reply, Reques
     reply.headers[0].value = std::to_string(reply.content.size());
     reply.headers[1].name = "Content-Type";
     reply.headers[1].value = mime_types::extension_to_type(extension);
+    BOOST_LOG_TRIVIAL(warning) << "static request handler finish preparing reply";  
 }
 
 std::string StaticRequestHandler::get_extension(const std::string &request_path)

@@ -1,9 +1,11 @@
 #include "request_handler_generator.h"
+#include <boost/log/trivial.hpp>
 
 RequestHandlerGenerator::RequestHandlerGenerator(std::map<std::string, std::shared_ptr<RequestHandler>> map) : map_(map) {}
 
 int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 {
+    BOOST_LOG_TRIVIAL(warning) << "Request Parser generator is finding common prefix";  
     std::vector<std::string> v1;
     std::vector<std::string> v2;
     char s1[a.size() + 1];
@@ -71,6 +73,6 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
             longest_length = current_length;
         }
     }
-
+    BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find logest_path: " << longest_path;     
     return map_[longest_path];
 }
