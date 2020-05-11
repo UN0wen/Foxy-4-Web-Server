@@ -38,3 +38,11 @@ TEST_F(RequestHandlerGeneratorTest, TestGetImageEchoHandler)
     RequestHandler *rh = request_handler_generator.dispatch_handler("/echo/").get();
     EXPECT_TRUE(rh == request_handler_generator.mapping().at("/echo/").get());
 }
+
+TEST_F(RequestHandlerGeneratorTest, TestGetlongestMatching)
+{
+    RequestHandlerGenerator request_handler_generator;
+    request_handler_generator.get_map(&config);
+    RequestHandler *rh = request_handler_generator.dispatch_handler("/static/html/fake.html").get();
+    EXPECT_TRUE(rh == request_handler_generator.mapping().at("/static/html/").get());
+}
