@@ -96,10 +96,11 @@ int main(int argc, char *argv[])
 
     bool parse_success = config_parser.Parse(argv[1], &config);
     bool get_port = config.get_port(&port);
-    bool get_map = config.get_map(&mapping);
+    RequestHandlerGenerator generator;
+    bool get_map = generator.get_map(&config);
     if (parse_success && get_port && get_map)
     {
-      RequestHandlerGenerator generator(mapping);
+      
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
