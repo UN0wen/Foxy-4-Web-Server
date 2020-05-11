@@ -1,9 +1,22 @@
 #include "request_handler_generator.h"
 #include <boost/log/trivial.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
+
+bool is_quoted(std::string* s)
+{
+	if(!boost::starts_with(*s, "\"") ||
+	   !boost::ends_with(*s, "\""))
+	{
+		return false;
+	}
+	s->erase(0,1);
+	s->erase(s->size()-1);
+	return true;
+}
 
 int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 {
@@ -75,19 +88,14 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
 			longest_length = current_length;
 		}
 	}
-	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find logest_path: " << longest_path;     
+	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find longest_path: " << longest_path;     
 	return map_[longest_path];
 }
 
-bool RequestHandlerGenerator::invalid_config(std::vector<std::string>::iterator path,
-                                 			 std::vector<std::string>::iterator root,
-                                			 std::vector<std::string>::iterator method,
-                                			 const auto &statement)
+bool RequestHandlerGenerator::invalid_config(const auto &statement)
 {
-    if (statement->tokens_.size() != 2 ||
-        path == std::prev(statement->tokens_.end()) ||
-        root == std::prev(statement->tokens_.end()) ||
-        method == std::prev(statement->tokens_.end()))
+    if (statement->tokens_.size() != 3 &&
+        statement->child_block_ != nullptr)
         return true;
     return false;
 }
@@ -98,48 +106,39 @@ bool RequestHandlerGenerator::get_map(NginxConfig* config)
 	{
 		std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
 															statement->tokens_.end(),
-															"server");
-		if (find != statement->tokens_.end())
+															"location");
+		if (find == statement->tokens_.begin())
 		{
 			std::string path, root, method = "";
-			for (const auto &s : statement->child_block_->statements_)
+			if(invalid_config(statement))
 			{
-				std::vector<std::string>::iterator find_path = std::find(s->tokens_.begin(),
-																		 s->tokens_.end(),
-																		 "path");
-				std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
-																		 s->tokens_.end(),
-																		 "root");
-				std::vector<std::string>::iterator find_method = std::find(s->tokens_.begin(),
-																		   s->tokens_.end(),
-																		   "method");
-
-				if(invalid_config(find_path, find_root, find_method, s))
-				{
-					return false;
-				}
-        		//assign values if keywords are found
-				if (find_path != s->tokens_.end())
-				{
-					path = *(find_path + 1);
-				}
-
-				if (find_root != s->tokens_.end())
-				{
-					root = *(find_root + 1);
-				}
-				if (find_method != s->tokens_.end())
-				{
-					method = *(find_method + 1);
-				}
+				return false;
 			}
+    		//assign values if keywords are found
+			method = *(find + 2);
+			path = *(find + 1);
 
-			if (method == "static" &&
-				!root.empty() && !path.empty())
+			if(!is_quoted(&path))
+				return false;
+
+			if (method == "StaticHandler" &&
+				!path.empty())
 			{
+				for (const auto &s : statement->child_block_->statements_)
+				{
+					std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
+																			 s->tokens_.end(),
+																			 "root");
+					if(find_root != s->tokens_.end())
+					{
+						root = *(find_root + 1);
+					}
+				}
+				if(!is_quoted(&root))
+				return false;
 				map_.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new StaticRequestHandler(root, path)));
 			}
-			else if (method == "echo" &&
+			else if (method == "EchoHandler" &&
 				!path.empty())
 			{
 				map_.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new EchoRequestHandler()));

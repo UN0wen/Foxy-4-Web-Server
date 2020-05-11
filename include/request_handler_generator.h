@@ -13,8 +13,5 @@ class RequestHandlerGenerator {
     private:
     int common_prefix_length(std::string a, std::string b);
     std::map<std::string, std::shared_ptr<RequestHandler>> map_;
-    bool invalid_config(std::vector<std::string>::iterator path,
-	                std::vector<std::string>::iterator root,
-	                std::vector<std::string>::iterator method,
-	                const auto &statement);
+    bool invalid_config(const auto &statement);
 };
