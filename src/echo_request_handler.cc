@@ -11,6 +11,12 @@ EchoRequestHandler::EchoRequestHandler()
 {
 }
 
+RequestHandler* EchoRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
+{
+	EchoRequestHandler* echo_request_handler = new EchoRequestHandler();
+	return echo_request_handler;
+}
+
 void EchoRequestHandler::handle_request(Request &request, Reply &reply, RequestParser::result_type parse_result)
 {
   reply.status = parse_result == RequestParser::result_type::good ? Reply::ok : Reply::bad_request;

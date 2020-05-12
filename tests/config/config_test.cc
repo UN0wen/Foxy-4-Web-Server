@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "config_parser.h"
+#include "request_handler.h"
 
 
 class ConfigTest : public ::testing::Test {

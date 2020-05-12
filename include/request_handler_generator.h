@@ -7,6 +7,7 @@ class RequestHandlerGenerator {
     public:
     RequestHandlerGenerator();
     std::shared_ptr<RequestHandler> dispatch_handler(std::string uri);
+    RequestHandler* createHandler(std::string path, std::string method, NginxConfig& config);
     bool get_map(NginxConfig* config);
     std::map<std::string, std::shared_ptr<RequestHandler>> mapping();
     

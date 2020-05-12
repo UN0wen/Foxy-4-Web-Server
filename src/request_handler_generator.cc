@@ -1,22 +1,9 @@
 #include "request_handler_generator.h"
 #include <boost/log/trivial.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
-
-bool is_quoted(std::string* s)
-{
-	if(!boost::starts_with(*s, "\"") ||
-	   !boost::ends_with(*s, "\""))
-	{
-		return false;
-	}
-	s->erase(0,1);
-	s->erase(s->size()-1);
-	return true;
-}
 
 int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 {
@@ -108,6 +95,22 @@ bool RequestHandlerGenerator::invalid_config(const auto &statement)
     return false;
 }
 
+RequestHandler* RequestHandlerGenerator::createHandler(std::string path, std::string method, NginxConfig& config)
+{
+	if (method == "StaticHandler")
+	{
+		return StaticRequestHandler::Init(path, config);
+	}
+	if (method == "EchoHandler")
+	{
+		return EchoRequestHandler::Init(path, config);
+	}
+	else 
+	{
+		return nullptr;
+	}
+}
+
 bool RequestHandlerGenerator::get_map(NginxConfig* config)
 {
 	for (const auto &statement : config->statements_)
@@ -129,31 +132,14 @@ bool RequestHandlerGenerator::get_map(NginxConfig* config)
 			if(!is_quoted(&path))
 				return false;
 
-			if (method == "StaticHandler" &&
-				!path.empty())
-			{
-				for (const auto &s : statement->child_block_->statements_)
-				{
-					std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
-																			 s->tokens_.end(),
-																			 "root");
-					if(find_root != s->tokens_.end())
-					{
-						root = *(find_root + 1);
-					}
-				}
-				if(!is_quoted(&root))
-				return false;
-				map_.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new StaticRequestHandler(root, path)));
-			}
-			else if (method == "EchoHandler" &&
-				!path.empty())
-			{
-				map_.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, new EchoRequestHandler()));
-			}
-			else 
+			RequestHandler* rh = createHandler(path, method, *(statement->child_block_));
+			if(rh == nullptr)
 			{
 				return false;
+			}
+			else
+			{
+				map_.insert(std::pair<std::string, std::shared_ptr<RequestHandler>>(path, rh));
 			}
 		}
 	}

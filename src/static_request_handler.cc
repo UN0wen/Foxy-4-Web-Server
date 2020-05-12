@@ -13,12 +13,31 @@
 #include <sstream>
 #include <string>
 #include <boost/log/trivial.hpp>
-
 #include "mime_types.h"
 
 StaticRequestHandler::StaticRequestHandler(const std::string &root, const std::string &path)
     : root_(root), path_(path)
 {
+}
+
+RequestHandler* StaticRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
+{
+    std::string root = "";
+    for (const auto &s : config.statements_)
+    {
+        std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
+                                                                 s->tokens_.end(),
+                                                                 "root");
+        if(find_root != s->tokens_.end())
+        {
+            root = *(find_root + 1);
+        }
+    }
+    if(!is_quoted(&root))
+        return nullptr;
+
+    StaticRequestHandler* static_request_handler = new StaticRequestHandler(root, location_path);
+    return static_request_handler;
 }
 
 void StaticRequestHandler::handle_request(Request &request, Reply &reply, RequestParser::result_type parse_result)

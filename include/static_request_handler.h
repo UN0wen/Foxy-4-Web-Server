@@ -7,6 +7,7 @@ class StaticRequestHandler : public RequestHandler
 {
 public:
     StaticRequestHandler(const std::string &root, const std::string &path);
+    static RequestHandler* Init(const std::string& location_path, const NginxConfig& config);
     StaticRequestHandler() {
         root_ = "";
         path_ = "";

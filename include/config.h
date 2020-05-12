@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "request_handler.h"
 
 struct PathToRoot {
   std::string root;
@@ -34,3 +33,5 @@ class NginxConfig {
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   
 };
+
+bool is_quoted(std::string* s);
