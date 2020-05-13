@@ -9,6 +9,7 @@
 //
 
 #include "static_request_handler.h"
+#include "response_generator.h"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -40,30 +41,26 @@ RequestHandler* StaticRequestHandler::Init(const std::string& location_path, con
     return static_request_handler;
 }
 
-void StaticRequestHandler::handle_request(Request &request, Response &response, RequestParser::result_type parse_result)
+Response StaticRequestHandler::handle_request(const Request &request)
 {
-    if (parse_result != RequestParser::result_type::good)
-    {
-        response = Response::stock_response(Response::bad_request);
-        return;
-    }
-
     // Decode url to path.
+    Response response = Response();
     std::string request_path;
 
     BOOST_LOG_TRIVIAL(info) << "Request URI " << request.uri_;
     if (!check_request_path(request.uri_, request_path))
     {
         BOOST_LOG_TRIVIAL(error) << "Request URI contains error(s)... returning 400 response";
-        response = Response::stock_response(Response::bad_request);
-        return;
+        response = ResponseGenerator::stock_response(Response::bad_request);
+        return response;
     }
 
     if (!replace_path(request_path))
     {
         BOOST_LOG_TRIVIAL(error) << "Static handler's path not found in URI... returning 500 response";
-        response = Response::stock_response(Response::internal_server_error);
-        return;
+        
+        response = ResponseGenerator::stock_response(Response::internal_server_error);
+        return response;
     }
 
     std::string extension = get_extension(request_path);
@@ -74,8 +71,8 @@ void StaticRequestHandler::handle_request(Request &request, Response &response, 
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)
     {
-        response = Response::stock_response(Response::not_found);
-        return;
+        response = ResponseGenerator::stock_response(Response::not_found);
+        return response;
     }
 
     // Fill out the response to be sent to the client.
@@ -87,7 +84,8 @@ void StaticRequestHandler::handle_request(Request &request, Response &response, 
     //response.headers.resize(2);
     response.headers_["Content-Length"] = std::to_string(response.body_.size());
     response.headers_["Content-Type"] = mime_types::extension_to_type(extension);
-    BOOST_LOG_TRIVIAL(warning) << "static request handler finish preparing response";  
+    BOOST_LOG_TRIVIAL(info) << "static request handler finish preparing response with content length of " << response.headers_["Content-Length"];  
+    return response;
 }
 
 std::string StaticRequestHandler::get_extension(const std::string &request_path)

@@ -22,6 +22,7 @@ if  curl -s localhost:8000/echo | \
 then
 	echo "	Basic echo curl test success."
 else
+	echo "	Basic echo curl test fail."
 	ERROR=1
 fi
 
@@ -38,6 +39,7 @@ if  curl -s -d val=0 localhost:8000/echo | \
 then
 	echo "	Curl post test success."
 else
+	echo "	Curl post test fail."
 	ERROR=1
 fi
 
@@ -46,12 +48,13 @@ if 	echo "test" | \
 	nc -w 1 localhost 8000 | \
 	tr "\n\r" " "| \
 	grep "HTTP/1.1 400 Bad Request" | \
-	grep "Content-Length: 5" | \
-	grep "content-type: text/plain" | \
-	grep "test" > /dev/null;
+	grep "Content-Length: 89" | \
+	grep "Content-Type: text/html" | \
+	grep "<html><head><title>Bad Request</title></head><body><h1>400 Bad Request</h1></body></html>" > /dev/null;
 then
 	echo "Bad request test success."
 else 
+	echo "Bad request test fail."
 	ERROR=1
 fi
 

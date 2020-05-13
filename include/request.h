@@ -28,6 +28,4 @@ struct Request
   std::map<std::string, std::string> headers_;
   std::string body_;
 
-  // the entire raw request for echo functionality
-  const char *raw_request;
 };

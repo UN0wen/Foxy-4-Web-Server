@@ -52,11 +52,11 @@ struct Response
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
   /// not be changed until the write operation has completed.
-  std::vector<boost::asio::const_buffer> to_buffers();
+  //std::vector<boost::asio::const_buffer> to_buffers();
 
   /// Get a stock reply.
-  static Response stock_response(status_code status);
+  //static Response stock_response(status_code status);
 
-  static boost::asio::const_buffer status_string_accessor(status_code status);
+  //static boost::asio::const_buffer status_string_accessor(status_code status);
 };
 

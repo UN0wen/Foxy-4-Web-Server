@@ -8,10 +8,10 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //Reference: source code from https://www.boost.org/doc/libs/1_65_1/doc/html/boost_asio/example/cpp11/http/server/reply.cpp
 
-#include "response.h"
+#include "response_generator.h"
 #include <string>
 
-namespace status_strings {
+namespace status_string {
   const std::string ok =
     "HTTP/1.1 200 OK\r\n";
   const std::string created =
@@ -87,34 +87,48 @@ namespace status_strings {
   }  
 } // namespace status_strings
 
-namespace misc_strings {
+namespace misc_string {
 
 const char name_value_separator[] = { ':', ' ' };
 const char crlf[] = { '\r', '\n' };
 
 } // namespace misc_strings
 
-std::vector<boost::asio::const_buffer> Response::to_buffers()
+ResponseGenerator::ResponseGenerator(){
+
+}
+
+void ResponseGenerator::init(Response response){
+    body_ = response.body_;
+    code_ = response.code_;
+    headers_.clear();
+    std::map<std::string, std::string>::iterator it;
+    for(it = response.headers_.begin(); it != response.headers_.end(); it ++ ){
+        headers_[it->first] = it->second;
+    }
+}
+
+std::vector<boost::asio::const_buffer> ResponseGenerator::to_buffers()
 {
   std::vector<boost::asio::const_buffer> buffers;
-  buffers.push_back(status_strings::to_buffer(code_));
+  buffers.push_back(status_string::to_buffer(code_));
   //for (std::size_t i = 0; i < headers_.size(); ++i)
   for(auto it = headers_.begin(); it != headers_.end(); it++)
   {
     //Header& h = headers_[i];
     //buffers.push_back(boost::asio::buffer(h.name));
     buffers.push_back(boost::asio::buffer(it->first));
-    buffers.push_back(boost::asio::buffer(misc_strings::name_value_separator));
+    buffers.push_back(boost::asio::buffer(misc_string::name_value_separator));
     //buffers.push_back(boost::asio::buffer(h.value));
     buffers.push_back(boost::asio::buffer(it->second));
-    buffers.push_back(boost::asio::buffer(misc_strings::crlf));
+    buffers.push_back(boost::asio::buffer(misc_string::crlf));
   }
-  buffers.push_back(boost::asio::buffer(misc_strings::crlf));
+  buffers.push_back(boost::asio::buffer(misc_string::crlf));
   buffers.push_back(boost::asio::buffer(body_));
   return buffers;
 }
 
-namespace stock_replies {
+namespace stock_reply {
 
 const char ok[] = "";
 const char created[] =
@@ -235,11 +249,11 @@ std::string to_string(Response::status_code status)
 }
 } // namespace stock_replies
 
-Response Response::stock_response(Response::status_code status)
+Response ResponseGenerator::stock_response(Response::status_code status)
 {
   Response rep;
   rep.code_ = status;
-  rep.body_ = stock_replies::to_string(status);
+  rep.body_ = stock_reply::to_string(status);
   // rep.headers_.resize(2);
   // rep.headers_[0].name = "Content-Length";
   // rep.headers_[0].value = std::to_string(rep.content.size());
@@ -251,7 +265,7 @@ Response Response::stock_response(Response::status_code status)
   return rep;
 }
 
-boost::asio::const_buffer Response::status_string_accessor(Response::status_code status)
+boost::asio::const_buffer ResponseGenerator::status_string_accessor(Response::status_code status)
 {
-  return status_strings::to_buffer(status);
+  return status_string::to_buffer(status);
 }

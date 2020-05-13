@@ -16,6 +16,7 @@ using boost::asio::ip::tcp;
 #include "request_handler.h"
 #include "request_handler_generator.h"
 #include <map>
+#include "response_generator.h"
 
 
 class Session
@@ -37,10 +38,12 @@ private:
 
   void handle_write(const boost::system::error_code& error);
   Response process_request(bool status);
+  void deep_copy_response(Response response);
+  void handle_bad_request();
 
   RequestParser request_parser_;
+  ResponseGenerator response_generator_;
   Request request_;
-  Response response_;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];

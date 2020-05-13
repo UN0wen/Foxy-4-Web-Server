@@ -43,22 +43,31 @@ void Session::start()
                                       boost::asio::placeholders::bytes_transferred));
 }
 
+void Session::deep_copy_response(Response response)
+{
+  response_generator_.init(response);
+}
+
+void Session::handle_bad_request()
+{
+  BOOST_LOG_TRIVIAL(trace) << "generating bad request for client";
+  Response response = ResponseGenerator::stock_response(Response::status_code::bad_request);
+  response_generator_.init(response);
+}
+
 void Session::handle_final_read(const boost::system::error_code &error,
                                 size_t bytes_transferred, RequestHandler *request_handler)
 {
   BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
   std::string remote_ip = this->socket().remote_endpoint().address().to_string();
   BOOST_LOG_TRIVIAL(trace) << "Additonal data fetched for IP (" << remote_ip << ")";
-  char *full_text;
-  full_text = (char *)malloc(strlen(buffer_) + strlen(data_) + 1);
-  strcpy(full_text, data_);
-  strcat(full_text, buffer_);
 
-  request_.raw_request = full_text;
+  request_.body_ = buffer_;
 
-  request_handler->handle_request(request_, response_, RequestParser::result_type::good);
+  Response response = request_handler->handle_request(request_);
+  deep_copy_response(response);
   boost::asio::async_write(socket_,
-                           response_.to_buffers(),
+                           response_generator_.to_buffers(),
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
   BOOST_LOG_TRIVIAL(trace) << "Response sent back to IP ("
@@ -80,7 +89,6 @@ void Session::handle_read(const boost::system::error_code &error,
                             << ")...handling request";
     // Prechecking if an incoming HTTP message is valid or not
     request_ = Request();
-    response_ = Response();
     RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
     BOOST_LOG_TRIVIAL(warning) << "Request Parser finish parsing request (" << remote_ip << ")";
     RequestHandler *request_handler = generator_.dispatch_handler(request_.uri_).get();
@@ -95,10 +103,10 @@ void Session::handle_read(const boost::system::error_code &error,
       BOOST_LOG_TRIVIAL(info) << "HTTP format check from IP ("
                               << remote_ip
                               << ") passed, preparing response...";
-      
-      request_handler->handle_request(request_, response_, result);
+      Response response = request_handler->handle_request(request_);
+      deep_copy_response(response);
       boost::asio::async_write(socket_,
-                               response_.to_buffers(),
+                               response_generator_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
       BOOST_LOG_TRIVIAL(trace) << "Response sent back to IP ("
@@ -121,10 +129,11 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::bad)
     {
       BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing response...";
-
-      request_handler->handle_request(request_, response_, result);
+      //TODO: THIS IS JUST TO CORRESPONDING TO THE CURRENT INTEGRATION TEST FOR BAD REQUEST HANDLING.
+      //response_ = Response::stock_response(Response::bad_request); //THIS IS FOR STATIC RESPONSE HANDLER WAY TO DEAL WITH BAD REQUEST
+      handle_bad_request();
       boost::asio::async_write(socket_,
-                               response_.to_buffers(),
+                               response_generator_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
       BOOST_LOG_TRIVIAL(warning) << "Bad status response sent back to IP (" << remote_ip << ").";

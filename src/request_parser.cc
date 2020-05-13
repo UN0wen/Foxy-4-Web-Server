@@ -35,8 +35,6 @@ RequestParser::result_type RequestParser::parse_data(Request &request, const cha
 {
   RequestParser::result_type result;
 
-  request.raw_request = data;
-
   std::tie(result, std::ignore) = parse(request, data, data + bytes_transferred);
 
   int char_amount = get_char_amount();
@@ -48,10 +46,10 @@ RequestParser::result_type RequestParser::parse_data(Request &request, const cha
     }
   if (content_length > 0 && char_amount == strlen(data))
   {
-    std::string data_helper(data);
-    request.body_ = data_helper.substr(data_helper.length() - content_length);
     return result = RequestParser::result_type::missing_data;
   }
+  std::string data_helper(data);
+  request.body_ = data_helper.substr(data_helper.length() - content_length);
 
   return result;
 }
@@ -200,8 +198,7 @@ RequestParser::result_type RequestParser::consume(Request &req, char input)
   case http_version_minor_start:
     if (is_digit(input))
     {
-      char version_ = minor * 10 + input - '0';      
-      req.http_version_.push_back(version_);
+      req.http_version_.push_back(input);
       state_ = http_version_minor;
       return indeterminate;
     }
@@ -304,6 +301,7 @@ RequestParser::result_type RequestParser::consume(Request &req, char input)
   case header_value:
     if (input == '\r')
     {
+      header_helper.clear();
       state_ = expecting_newline_2;
       return indeterminate;
     }
@@ -313,7 +311,7 @@ RequestParser::result_type RequestParser::consume(Request &req, char input)
     }
     else
     {
-      (--req.headers_.end())->second.push_back(input);
+      req.headers_[header_helper].push_back(input);
       return indeterminate;
     }
   case expecting_newline_2:

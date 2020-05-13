@@ -12,10 +12,7 @@ public:
         root_ = "";
         path_ = "";
     }
-    void handle_request(
-        Request &request,
-        Response &response, 
-        RequestParser::result_type parse_result);
+    Response handle_request(const Request &request);
 
 private:
     bool url_decode(const std::string &in, std::string &out);

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "echo_request_handler.h"
 
@@ -17,13 +18,48 @@ RequestHandler* EchoRequestHandler::Init(const std::string& location_path, const
 	return echo_request_handler;
 }
 
-void EchoRequestHandler::handle_request(Request &request, Response &response, RequestParser::result_type parse_result)
+std::string EchoRequestHandler::convert_to_rawbody(Request request){
+  std::string req = "";
+  if(request.method_ == Request::MethodEnum::GET){
+    req += "GET";
+  }
+  else if(request.method_ == Request::MethodEnum::POST){
+    req += "POST";
+  }
+  else if(request.method_ == Request::MethodEnum::PUT){
+    req += "PUT";
+  }
+  else{
+    req += "UNKNOWN";
+  }
+  req += " ";
+  req += request.uri_;
+  req += " HTTP";
+  req += "/";
+  req += request.http_version_;
+  req += "\r\n";
+  std::map<std::string, std::string>::iterator it;
+  for(it = request.headers_.begin(); it != request.headers_.end(); it ++ ){
+        if(it->second!=""){
+          req += it->first;
+          req += ": ";
+          req += it->second;
+          req += "\r\n";
+        }   
+  }
+  req += "\r\n";
+  req += request.body_;
+  return req;
+}
+
+Response EchoRequestHandler::handle_request(const Request &request)
 {
-  response.code_ = parse_result == RequestParser::result_type::good ? Response::ok : Response::bad_request;
-  response.body_ = std::string(request.raw_request);
-  //response.headers.resize(2);
+  Response response = Response();
+  std::string body = convert_to_rawbody(request);
+  response.body_ = body;
+  response.code_ = Response::ok;
   response.headers_["Content-Length"] = std::to_string(response.body_.size());
-  response.headers_["content-type"] = "text/plain";  
-  return;
+  response.headers_["Content-Type"] = "text/plain";  
+  return response;
 }
 
