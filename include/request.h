@@ -10,7 +10,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <map>
 #include "header.h"
 
 /// A request received from a client.
@@ -30,5 +30,4 @@ struct Request
 
   // the entire raw request for echo functionality
   const char *raw_request;
->>>>>>> Refactored Reply
 };
