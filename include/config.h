@@ -30,6 +30,7 @@ class NginxConfig {
   std::string ToString(int depth = 0);
   //gets the port number specified in nginx file
   bool get_port(int* port);
+  bool get_dir(std::string* dir);
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   
 };

@@ -29,6 +29,8 @@ bool is_quoted(std::string* s)
     }
     s->erase(0,1);
     s->erase(s->size()-1);
+    if(!boost::ends_with(*s, "/"))
+        *s += "/";
     return true;
 }
 
@@ -83,4 +85,23 @@ bool NginxConfig::get_port(int *port)
     };
   }
   return false;
+}
+
+bool NginxConfig::get_dir(std::string* dir)
+{
+  for (const auto &statement : statements_)
+  {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
+                                                        statement->tokens_.end(),
+                                                        "dir");
+
+    if (valid_keyword_listen(find, statement))
+    {
+      *dir = *(find + 1);
+      if(!is_quoted(dir))
+        return false;
+      return true;
+    }
+  }
+  return true;
 }

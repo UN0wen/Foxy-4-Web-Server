@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <csignal>
+#include <unistd.h>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/move/utility_core.hpp>
@@ -92,15 +93,21 @@ int main(int argc, char *argv[])
     NginxConfig config;
 
     int port;
+    std::string dir = "";
     std::map<std::string, std::shared_ptr<RequestHandler>> mapping;
 
     bool parse_success = config_parser.Parse(argv[1], &config);
     bool get_port = config.get_port(&port);
+    bool get_dir = config.get_dir(&dir);
+
     RequestHandlerGenerator generator;
     bool get_map = generator.get_map(&config);
-    if (parse_success && get_port && get_map)
+    if (parse_success && get_port && get_map && get_dir)
     {
-      
+      if(!dir.empty())
+      {
+        chdir(dir.c_str());
+      }
       BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
