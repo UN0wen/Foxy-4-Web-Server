@@ -58,6 +58,10 @@ public:
   }
 
 private:
+  int major, minor;
+  std::string method_helper = "";
+  std::string header_helper = "";
+  
   int n_char_parsed;
   /// Handle the next character of input.
   result_type consume(Request &req, char input);

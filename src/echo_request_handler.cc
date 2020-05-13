@@ -17,16 +17,13 @@ RequestHandler* EchoRequestHandler::Init(const std::string& location_path, const
 	return echo_request_handler;
 }
 
-void EchoRequestHandler::handle_request(Request &request, Reply &reply, RequestParser::result_type parse_result)
+void EchoRequestHandler::handle_request(Request &request, Response &response, RequestParser::result_type parse_result)
 {
-  reply.status = parse_result == RequestParser::result_type::good ? Reply::ok : Reply::bad_request;
-  reply.content = std::string(request.raw_request);
-  reply.headers.resize(2);
-  reply.headers[0].name = "Content-Length";
-  reply.headers[0].value = std::to_string(reply.content.size());
-  reply.headers[1].name = "content-type";
-  reply.headers[1].value = "text/plain";
-  
+  response.code_ = parse_result == RequestParser::result_type::good ? Response::ok : Response::bad_request;
+  response.body_ = std::string(request.raw_request);
+  //response.headers.resize(2);
+  response.headers_["Content-Length"] = std::to_string(response.body_.size());
+  response.headers_["content-type"] = "text/plain";  
   return;
 }
 

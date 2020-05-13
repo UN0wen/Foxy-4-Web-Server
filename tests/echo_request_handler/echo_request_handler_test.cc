@@ -31,10 +31,9 @@ Host: localhost:8000\r\n\r\n{'test_value': '1'}";
     std::vector<Header> headers = {header_1, header_2, header_3};
 
     Request request = {
-        "POST",                // std::string method;
+      Request::POST,                // std::string method;
         "/",                   // std::string uri;
-        1,                     // int http_version_major;
-        1,                     // int http_version_minor;
+      "1.1",
         headers,               // std::vector<Header> headers;
         "{'test_value': '1'}", // std::string data;
         post_request           // const char raw_request
@@ -43,25 +42,25 @@ Host: localhost:8000\r\n\r\n{'test_value': '1'}";
 
 TEST_F(EchoRequestHandlerTest, SendingGoodStatus)
 {
-    Reply reply;
-    request_handler.handle_request(request, reply, RequestParser::result_type::good);
-    bool success_header_name = reply.headers[1].name == "content-type";
-    bool success_content = reply.content == post_request;
-    bool success_header_value = reply.headers[1].value == "text/plain";
-    bool success_status = reply.status == Reply::ok;
+    Response response;
+    request_handler.handle_request(request, response, RequestParser::result_type::good);
+    bool success_header_name = response.headers[1].name == "content-type";
+    bool success_content = response.content == post_request;
+    bool success_header_value = response.headers[1].value == "text/plain";
+    bool success_status = response.status == Response::ok;
 
     EXPECT_TRUE(success_header_name && success_content && success_header_value && success_status);
 }
 
 TEST_F(EchoRequestHandlerTest, SendingBadStatus)
 {
-    Reply reply;
-    reply.status = Reply::bad_request;
-    request_handler.handle_request(request, reply, RequestParser::result_type::bad);
-    bool bad_header_name = reply.headers[1].name == "content-type";
-    bool bad_content = reply.content == post_request;
-    bool bad_header_value = reply.headers[1].value == "text/plain";
-    bool bad_status = reply.status == Reply::bad_request;
+    Response response;
+    response.status = Response::bad_request;
+    request_handler.handle_request(request, response, RequestParser::result_type::bad);
+    bool bad_header_name = response.headers[1].name == "content-type";
+    bool bad_content = response.content == post_request;
+    bool bad_header_value = response.headers[1].value == "text/plain";
+    bool bad_status = response.status == Response::bad_request;
 
     EXPECT_TRUE(bad_header_name && bad_content && bad_header_value && bad_status);
 }

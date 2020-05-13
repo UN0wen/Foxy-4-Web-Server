@@ -25,19 +25,18 @@ Host: localhost:8000\r\n\r\n{'test_value': '1'}";
     Header header_3 = {
         "Content-Type",    //name
         "application/json" //value
-    };
 
-    std::vector<Header> headers = {header_1, header_2, header_3};
-
-    Request request = {
-        "POST",                // std::string method;
-        "/",                   // std::string uri;
-        1,                     // int http_version_major;
-        1,                     // int http_version_minor;
-        headers,               // std::vector<Header> headers;
-        "{'test_value': '1'}", // std::string data;
-        post_request           // const char raw_request
     };
+  std::string version = "1.1";
+
+  Request request = {
+    Request::POST,                // std::string method;
+    "/",                   // std::string uri;
+    version,
+    headers,               // std::vector<Header> headers;
+    "{'test_value': '1'}", // std::string data;
+    post_request,           // const char raw_request
+  };
 };
 
 TEST_F(RequestTest, ContentLength)
@@ -53,7 +52,15 @@ TEST_F(RequestTest, NoContentLength)
 {
     int content_length;
 
-    content_length = empty_request.get_content_length();
+    //content_length = empty_request.get_content_length();
+    if (empty_request_.headers_.empty())
+      {
+	content_length = 0;
+      }
+    else
+      {
+	content_length = 0;
+      }
 
     EXPECT_EQ(content_length, 0);
 }

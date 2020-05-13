@@ -1,6 +1,6 @@
 #pragma once
 
-#include "reply.h"
+#include "response.h"
 #include "request.h"
 #include "request_parser.h"
 #include "config.h"
@@ -12,6 +12,6 @@ public:
   static RequestHandler* Init(const std::string& location_path, const NginxConfig& config);
   virtual void handle_request(
       Request &request,
-      Reply &reply,
+      Response &response,
       RequestParser::result_type parse_result) = 0;
 };

@@ -12,16 +12,17 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <boost/asio.hpp>
 #include "header.h"
 
 
 
 /// A reply to be sent to a client.
-struct Reply
+struct Response
 {
   /// The status of the reply.
-  enum status_type
+  enum status_code
   {
     ok = 200,
     created = 201,
@@ -39,13 +40,14 @@ struct Reply
     not_implemented = 501,
     bad_gateway = 502,
     service_unavailable = 503
-  } status;
-
+  } code_;
+  
   /// The headers to be included in the reply.
-  std::vector<Header> headers;
+  //std::vector<Header> headers;
+  std::map<std::string, std::string> headers_;
 
   /// The content to be sent in the reply.
-  std::string content;
+  std::string body_;
 
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
@@ -53,8 +55,8 @@ struct Reply
   std::vector<boost::asio::const_buffer> to_buffers();
 
   /// Get a stock reply.
-  static Reply stock_reply(status_type status);
+  static Response stock_response(status_code status);
 
-  static boost::asio::const_buffer status_string_accessor(status_type status);
+  static boost::asio::const_buffer status_string_accessor(status_code status);
 };
 

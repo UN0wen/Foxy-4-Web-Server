@@ -17,7 +17,7 @@
 #include <boost/log/support/date_time.hpp>
 
 #include "session.h"
-#include "reply.h"
+#include "response.h"
 #include "request.h"
 
 #define BOOST_LOG_DYN_LINK 1
@@ -56,12 +56,12 @@ void Session::handle_final_read(const boost::system::error_code &error,
 
   request_.raw_request = full_text;
 
-  request_handler->handle_request(request_, reply_, RequestParser::result_type::good);
+  request_handler->handle_request(request_, response_, RequestParser::result_type::good);
   boost::asio::async_write(socket_,
-                           reply_.to_buffers(),
+                           response_.to_buffers(),
                            boost::bind(&Session::handle_write, this,
                                        boost::asio::placeholders::error));
-  BOOST_LOG_TRIVIAL(trace) << "Reply sent back to IP ("
+  BOOST_LOG_TRIVIAL(trace) << "Response sent back to IP ("
                            << remote_ip
                            << ") successfully!";
   memset(data_, 0, sizeof(data_));
@@ -80,10 +80,10 @@ void Session::handle_read(const boost::system::error_code &error,
                             << ")...handling request";
     // Prechecking if an incoming HTTP message is valid or not
     request_ = Request();
-    reply_ = Reply();
+    response_ = Response();
     RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
     BOOST_LOG_TRIVIAL(warning) << "Request Parser finish parsing request (" << remote_ip << ")";
-    RequestHandler *request_handler = generator_.dispatch_handler(request_.uri).get();
+    RequestHandler *request_handler = generator_.dispatch_handler(request_.uri_).get();
     BOOST_LOG_TRIVIAL(warning) << "Request handler generator finish assigning specific request handler(" << remote_ip << ")";
     request_parser_.reset();
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
@@ -94,14 +94,14 @@ void Session::handle_read(const boost::system::error_code &error,
     {
       BOOST_LOG_TRIVIAL(info) << "HTTP format check from IP ("
                               << remote_ip
-                              << ") passed, preparing reply...";
+                              << ") passed, preparing response...";
       
-      request_handler->handle_request(request_, reply_, result);
+      request_handler->handle_request(request_, response_, result);
       boost::asio::async_write(socket_,
-                               reply_.to_buffers(),
+                               response_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-      BOOST_LOG_TRIVIAL(trace) << "Reply sent back to IP ("
+      BOOST_LOG_TRIVIAL(trace) << "Response sent back to IP ("
                                << remote_ip
                                << ") successfully!";
     }
@@ -111,8 +111,8 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::missing_data)
     {
       BOOST_LOG_TRIVIAL(info) << "HTTP format check for IP (" << remote_ip << ")passed but message is missing data, fetching...";
-      int content_length = request_.get_content_length();
-      socket_.async_read_some(boost::asio::buffer(buffer_, content_length),
+      //int content_length = request_.get_content_length();
+      socket_.async_read_some(boost::asio::buffer(buffer_, max_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,
                                           boost::asio::placeholders::bytes_transferred, request_handler));
@@ -120,14 +120,14 @@ void Session::handle_read(const boost::system::error_code &error,
     //result for http request is bad, async_write will send out http response 400 back to the client
     else if (result == RequestParser::bad)
     {
-      BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing reply...";
+      BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing response...";
 
-      request_handler->handle_request(request_, reply_, result);
+      request_handler->handle_request(request_, response_, result);
       boost::asio::async_write(socket_,
-                               reply_.to_buffers(),
+                               response_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
                                            boost::asio::placeholders::error));
-      BOOST_LOG_TRIVIAL(warning) << "Bad status reply sent back to IP (" << remote_ip << ").";
+      BOOST_LOG_TRIVIAL(warning) << "Bad status response sent back to IP (" << remote_ip << ").";
     }
 
     if (result != RequestParser::missing_data)

@@ -40,29 +40,29 @@ RequestHandler* StaticRequestHandler::Init(const std::string& location_path, con
     return static_request_handler;
 }
 
-void StaticRequestHandler::handle_request(Request &request, Reply &reply, RequestParser::result_type parse_result)
+void StaticRequestHandler::handle_request(Request &request, Response &response, RequestParser::result_type parse_result)
 {
     if (parse_result != RequestParser::result_type::good)
     {
-        reply = Reply::stock_reply(Reply::bad_request);
+        response = Response::stock_response(Response::bad_request);
         return;
     }
 
     // Decode url to path.
     std::string request_path;
 
-    BOOST_LOG_TRIVIAL(info) << "Request URI " << request.uri;
-    if (!check_request_path(request.uri, request_path))
+    BOOST_LOG_TRIVIAL(info) << "Request URI " << request.uri_;
+    if (!check_request_path(request.uri_, request_path))
     {
         BOOST_LOG_TRIVIAL(error) << "Request URI contains error(s)... returning 400 response";
-        reply = Reply::stock_reply(Reply::bad_request);
+        response = Response::stock_response(Response::bad_request);
         return;
     }
 
     if (!replace_path(request_path))
     {
         BOOST_LOG_TRIVIAL(error) << "Static handler's path not found in URI... returning 500 response";
-        reply = Reply::stock_reply(Reply::internal_server_error);
+        response = Response::stock_response(Response::internal_server_error);
         return;
     }
 
@@ -74,22 +74,20 @@ void StaticRequestHandler::handle_request(Request &request, Reply &reply, Reques
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)
     {
-        reply = Reply::stock_reply(Reply::not_found);
+        response = Response::stock_response(Response::not_found);
         return;
     }
 
-    // Fill out the reply to be sent to the client.
-    reply.status = Reply::ok;
+    // Fill out the response to be sent to the client.
+    response.code_ = Response::ok;
     char buf[512];
     while (is.read(buf, sizeof(buf)).gcount() > 0)
-        reply.content.append(buf, is.gcount());
+        response.body_.append(buf, is.gcount());
 
-    reply.headers.resize(2);
-    reply.headers[0].name = "Content-Length";
-    reply.headers[0].value = std::to_string(reply.content.size());
-    reply.headers[1].name = "Content-Type";
-    reply.headers[1].value = mime_types::extension_to_type(extension);
-    BOOST_LOG_TRIVIAL(warning) << "static request handler finish preparing reply";  
+    //response.headers.resize(2);
+    response.headers_["Content-Length"] = std::to_string(response.body_.size());
+    response.headers_["Content-Type"] = mime_types::extension_to_type(extension);
+    BOOST_LOG_TRIVIAL(warning) << "static request handler finish preparing response";  
 }
 
 std::string StaticRequestHandler::get_extension(const std::string &request_path)

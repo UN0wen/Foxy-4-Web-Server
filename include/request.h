@@ -16,29 +16,19 @@
 /// A request received from a client.
 struct Request
 {
-  std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
-  std::vector<Header> headers;
-  std::string data;
+  enum MethodEnum {
+    GET,
+    PUT,
+    POST,
+    UNKNOWN
+  };
+  MethodEnum method_;
+  std::string uri_;
+  std::string http_version_;
+  std::map<std::string, std::string> headers_;
+  std::string body_;
 
   // the entire raw request for echo functionality
   const char *raw_request;
-
-  // Return the content length of the request
-  int get_content_length()
-  {
-    {
-      for (int i = 0; i < headers.size(); ++i)
-      {
-        if (headers[i].name == "Content-Length")
-        {
-          return std::stoi(headers[i].value);
-        }
-      }
-
-      return 0;
-    }
-  }
+>>>>>>> Refactored Reply
 };

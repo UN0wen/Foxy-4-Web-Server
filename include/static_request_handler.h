@@ -14,7 +14,7 @@ public:
     }
     void handle_request(
         Request &request,
-        Reply &reply, 
+        Response &response, 
         RequestParser::result_type parse_result);
 
 private:

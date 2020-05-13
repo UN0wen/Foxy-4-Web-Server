@@ -7,7 +7,7 @@
 #include <boost/log/trivial.hpp>
 
 using boost::asio::ip::tcp;
-#include "reply.h"
+#include "response.h"
 #include "echo_request_handler.h"
 #include "request_parser.h"
 #include "static_request_handler.h"
@@ -36,11 +36,11 @@ private:
       size_t bytes_transferred, RequestHandler* request_handler);
 
   void handle_write(const boost::system::error_code& error);
-  Reply process_request(bool status);
+  Response process_request(bool status);
 
   RequestParser request_parser_;
   Request request_;
-  Reply reply_;
+  Response response_;
   tcp::socket socket_;
   enum { max_length = 1024 };
   char data_[max_length];

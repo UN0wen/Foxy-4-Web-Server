@@ -9,6 +9,6 @@ public:
     static RequestHandler* Init(const std::string& location_path, const NginxConfig& config);
     void handle_request(
         Request &request,
-        Reply &reply,
+        Response &response,
         RequestParser::result_type parse_result);
 };

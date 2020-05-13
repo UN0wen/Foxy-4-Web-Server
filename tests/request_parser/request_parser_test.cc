@@ -88,7 +88,7 @@ TEST_F(RequestParserTest, GetRequestURI)
                                                  get_data,
                                                  get_data + strlen(get_data));
 
-    EXPECT_TRUE(request.uri == "/");
+    EXPECT_TRUE(request.uri_ == "/");
     parser.reset();
     const char *get_link_data = "GET /web/test/index.html HTTP/1.1\r\n\r\n";
     Request get_link_request;
@@ -96,8 +96,8 @@ TEST_F(RequestParserTest, GetRequestURI)
     std::tie(result, std::ignore) = parser.parse(get_link_request,
                                                  get_link_data,
                                                  get_link_data + strlen(get_link_data));
-    std::cerr << get_link_request.uri << std::endl;
-    EXPECT_TRUE(get_link_request.uri == "/web/test/index.html");
+    std::cerr << get_link_request.uri_ << std::endl;
+    EXPECT_TRUE(get_link_request.uri_ == "/web/test/index.html");
 }
 
 // Http versions are parsed correctly
@@ -108,7 +108,8 @@ TEST_F(RequestParserTest, GetRequestHttpVersion)
                                                  get_data,
                                                  get_data + strlen(get_data));
 
-    EXPECT_TRUE(request.http_version_minor == 1 && request.http_version_major == 1);
+    //EXPECT_TRUE(request.http_version_minor == 1 && request.http_version_major == 1);
+    EXPECT_TRUE(request.http_version_[2] == '1' && request.http_version_[0] == '1');
 }
 
 // Checking headers are parsed correctly
@@ -120,7 +121,7 @@ TEST_F(RequestParserTest, GetRequestHeaders)
                                                  get_data + strlen(get_data));
     bool host, user_agent, accept_encoding, accept, connection = false;
 
-    for (auto it = request.headers.begin(); it != request.headers.end(); ++it)
+    for (auto it = request.headers_.begin(); it != request.headers_.end(); ++it)
     {
         if (it->name == "Host" && it->value == "localhost:8000")
             host = true;
@@ -171,7 +172,7 @@ TEST_F(RequestParserTest, PostRequestLength)
                                                  post_data + strlen(post_data));
 
     int content_length;
-    for (auto it = request.headers.begin(); it != request.headers.end(); ++it)
+    for (auto it = request.headers_.begin(); it != request.headers_.end(); ++it)
     {
         if (it->name == "Content-Length")
         {
@@ -198,9 +199,9 @@ TEST_F(RequestParserTest, HttpMethodCorrectness)
     std::tie(result, std::ignore) = parser.parse(request2,
                                                  get_data,
                                                  get_data + strlen(get_data));
-    EXPECT_FALSE(request2.method == request.method);
-    EXPECT_TRUE(request.method == "POST");
-    EXPECT_TRUE(request2.method == "GET");
+    EXPECT_FALSE(request2.method_ == request.method_);
+    EXPECT_TRUE(request.method_ == Request::POST);
+    EXPECT_TRUE(request2.method_ == Request::GET);
 }
 
 // Http Method must be present
@@ -345,8 +346,10 @@ Host: localhost:8000\r\n\r\n";
                                                  http_format_data,
                                                  http_format_data + strlen(http_format_data));
 
-    EXPECT_TRUE(request.http_version_major == 11);
-    EXPECT_TRUE(request.http_version_minor == 11);
+    //EXPECT_TRUE(request.http_version_major == 11);
+    EXPECT_TRUE(request.http_version_[0] == '1' && request.http_version_[1] == '1');
+    //EXPECT_TRUE(request.http_version_minor == 11);
+    EXPECT_TRUE(request.http_version_[3] == '1' && request.http_version_[4] == '1');
 }
 
 // Correctly skip whitespace in front of header names if there are any
@@ -442,7 +445,7 @@ Host: localhost:8000\r\n\
     std::tie(space_header_result, std::ignore) = parser.parse(request,
                                                               space_header_data,
                                                               space_header_data + strlen(space_header_data));
-    std::cerr << request.headers[0].name << std::endl;
+    std::cerr << request.headers_.begin()->first << std::endl;
     EXPECT_TRUE(space_header_result == RequestParser::result_type::good);
 }
 
