@@ -5,7 +5,7 @@
 class StaticRequestHandlerTest : public ::testing::Test
 {
 protected:
-    StaticRequestHandler request_handler = StaticRequestHandler("/test_data", "/test");
+    StaticRequestHandler request_handler = StaticRequestHandler("./test_data", "/test");
     const char *get_request = "GET /test/ HTTP/1.1\r\n\
 Host: localhost:8000\r\n\r\n";
   Response response;

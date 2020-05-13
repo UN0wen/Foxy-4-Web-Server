@@ -4,7 +4,7 @@ ERROR=0
 
 #test server using integration.conf
 
-printf "listen 8000; \nlocation \"/static/\" StaticHandler {\n\troot \"/data/\";\n} \n location \"/echo/\" EchoHandler{\n}" >integration.conf
+printf "listen 8000; \nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \n location \"/echo\" EchoHandler{\n}" >integration.conf
 
 SERVER_EXECUTABLE=$1
 $SERVER_EXECUTABLE integration.conf &

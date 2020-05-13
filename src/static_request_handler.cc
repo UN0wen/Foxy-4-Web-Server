@@ -69,7 +69,7 @@ void StaticRequestHandler::handle_request(Request &request, Response &response, 
     std::string extension = get_extension(request_path);
 
     // Open the file to send back.
-    std::string full_path = "." + request_path;
+    std::string full_path = request_path;
     BOOST_LOG_TRIVIAL(info) << "Full path " << full_path;
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)

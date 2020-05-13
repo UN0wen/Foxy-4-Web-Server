@@ -4,13 +4,13 @@ location "/echo/" EchoHandler{
 }
 
 location "/static/" StaticHandler{
-root "/data/";
+root "./data/";
 }
 
 location "/images/" StaticHandler{
-    root "/data/images/";
+root "./data/images/";
 }
 
 location "/static/html/" StaticHandler{
-    root "/data/html/";
+root "./data/html/";
 }
