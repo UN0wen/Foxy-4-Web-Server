@@ -3,6 +3,7 @@
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
 #include "status_request_handler.h"
+#include "not_found_request_handler.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
 
@@ -85,10 +86,10 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
 			longest_length = current_length;
 		}
 	}
-	//TODO: if longest PATH is 0, then status handler will be taken place (Assign to whoever work on status handler)
+	//TODO: if longest PATH is 0, then 404 handler will be taken place (Assign to whoever work on 404 handler)
 	if (longest_length == 0)
 	{
-		longest_path = "/echo/";
+		return map_["/"];
 	}
 	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find longest_path: " << longest_path;
 	return map_[longest_path];
@@ -115,6 +116,10 @@ RequestHandler *RequestHandlerGenerator::createHandler(std::string path, std::st
 	else if (method == "StatusHandler")
 	{
 		return StatusRequestHandler::Init(path, config);
+	}
+	else if (method == "NotFoundHandler")
+	{
+		return NotFoundRequestHandler::Init(path, config);
 	}
 	else
 	{

@@ -52,19 +52,21 @@ add_library(request_handler_generator src/request_handler_generator.cc)
 add_library(data_collector src/data_collector.cc)
 add_library(mime_types src/mime_types.cc)
 add_library(response_generator src/response_generator.cc)
+add_library(not_found_request_handler src/not_found_request_handler.cc)
 
 
+target_link_libraries(not_found_request_handler config response_generator data_collector)
 target_link_libraries(static_request_handler Boost::log mime_types config response_generator)
 target_link_libraries(config config_statement echo_request_handler static_request_handler status_request_handler)
 target_link_libraries(config_parser config)
-target_link_libraries(request_handler_generator Boost::log)
+target_link_libraries(request_handler_generator Boost::log not_found_request_handler)
 target_link_libraries(static_request_handler data_collector)
 target_link_libraries(echo_request_handler data_collector)
 target_link_libraries(status_request_handler data_collector)
 
 # joshua: Update executable name, srcs, and deps
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib session config config_parser config_statement static_request_handler status_request_handler response_generator mime_types echo_request_handler data_collector Boost::system request_parser request_handler_generator Boost::log_setup Boost::log)
+target_link_libraries(server server_lib session config config_parser config_statement static_request_handler status_request_handler response_generator mime_types echo_request_handler not_found_request_handler data_collector Boost::system request_parser request_handler_generator Boost::log_setup Boost::log)
 
 add_executable(config_test tests/config/config_test.cc)
 add_executable(config_parser_test tests/config_parser/config_parser_test.cc)
