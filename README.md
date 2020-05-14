@@ -9,12 +9,18 @@ config_parser.cc --- Config parser class from Assignment 1
 config_statement.cc --- Config statement class from Assignment 1
 mime_types.cc --- containes mapping of media types to extensions
 request_handler_generator.cc --- generates request handlers at startup
-request_parser.cc ---
-response.cc ---
-server.cc ---
-session.cc ---
-echo_request_handler.cc --- *Inherits from request_handler.h
-static_request_handler.cc --- *Inherits from request_handler.h
+request_parser.cc --- parses HTTP requests
+response.h --- class to hold an HTTP response
+response_generator.cc --- generates response objects
+server.cc --- class that listens for incoming connections
+session.cc --- class that recieves requests and builds the appropriate response
+echo_request_handler.cc --- sends back an echo of the request 
+                            *Inherits from request_handler.h
+static_request_handler.cc --- serves static files 
+                              *Inherits from request_handler.h
+status_request_handler.cc --- fetches server usage data 
+                              *Inherits from request_handler.h
+data_collector.cc --- class dedicated to storing info for status requests
 ```
 
 ## Getting Started
