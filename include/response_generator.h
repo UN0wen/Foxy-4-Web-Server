@@ -6,8 +6,8 @@ public:
     ResponseGenerator();
     void init(Response response_);
     Response::status_code code_;
+    
     /// The headers to be included in the reply.
-    //std::vector<Header> headers;
     std::map<std::string, std::string> headers_;
 
     /// The content to be sent in the reply.

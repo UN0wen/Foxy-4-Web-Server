@@ -11,7 +11,6 @@
 
 #include <string>
 #include <map>
-#include "header.h"
 
 /// A request received from a client.
 struct Request
