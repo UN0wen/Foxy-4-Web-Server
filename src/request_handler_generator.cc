@@ -8,7 +8,7 @@ RequestHandlerGenerator::RequestHandlerGenerator() {}
 
 int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 {
-	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator is finding common prefix";  
+	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator is finding common prefix";
 	std::vector<std::string> v1;
 	std::vector<std::string> v2;
 	char s1[a.size() + 1];
@@ -20,42 +20,46 @@ int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 	{
 		if (s1[i] == '/')
 		{
-			if(&x != NULL && !x.empty()) v1.push_back(x);
+			if (&x != NULL && !x.empty())
+				v1.push_back(x);
 			x = "";
 			continue;
 		}
 		x.push_back(s1[i]);
 	}
-    if(&x != NULL && !x.empty()){
-        v1.push_back(x); 
-    }
-    x = "";
-    for (int i = 0; i < strlen(s2); i++)
-    {
-        if (s2[i] == '/')
-        {
-            if(&x != NULL && !x.empty()) v2.push_back(x);
-            x = "";
-            continue;
-        }
-        x.push_back(s2[i]);
-    }
-    if(&x != NULL && !x.empty()){
-      v2.push_back(x);
-     }
-    std::vector<std::string>::iterator it_1 = v1.begin();
-    std::vector<std::string>::iterator it_2 = v2.begin();
-    int counter = 0;
-    while (it_2 != v2.end() && it_1 != v1.end())
-    {
-        if (*it_2 == *it_1)
-        {
-            counter++;
-        }
-        it_2++;
-        it_1++;
-    }
-    return counter;
+	if (&x != NULL && !x.empty())
+	{
+		v1.push_back(x);
+	}
+	x = "";
+	for (int i = 0; i < strlen(s2); i++)
+	{
+		if (s2[i] == '/')
+		{
+			if (&x != NULL && !x.empty())
+				v2.push_back(x);
+			x = "";
+			continue;
+		}
+		x.push_back(s2[i]);
+	}
+	if (&x != NULL && !x.empty())
+	{
+		v2.push_back(x);
+	}
+	std::vector<std::string>::iterator it_1 = v1.begin();
+	std::vector<std::string>::iterator it_2 = v2.begin();
+	int counter = 0;
+	while (it_2 != v2.end() && it_1 != v1.end())
+	{
+		if (*it_2 == *it_1)
+		{
+			counter++;
+		}
+		it_2++;
+		it_1++;
+	}
+	return counter;
 }
 
 std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::string uri)
@@ -68,7 +72,8 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
 	{
 		std::string path = it->first;
 		int current_length = common_prefix_length(uri, path);
-        if(current_length == 0) continue;
+		if (current_length == 0)
+			continue;
 		if (longest_length < current_length)
 		{
 			longest_length = current_length;
@@ -80,23 +85,24 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
 			longest_length = current_length;
 		}
 	}
-    //TODO: if longest PATH is 0, then status handler will be taken place (Assign to whoever work on status handler)
-    if(longest_length == 0){
-        longest_path = "/echo/";
-    } 
-	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find longest_path: " << longest_path;  
+	//TODO: if longest PATH is 0, then status handler will be taken place (Assign to whoever work on status handler)
+	if (longest_length == 0)
+	{
+		longest_path = "/echo/";
+	}
+	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find longest_path: " << longest_path;
 	return map_[longest_path];
 }
 
 bool RequestHandlerGenerator::invalid_config(const auto &statement)
 {
-    if (statement->tokens_.size() != 3 &&
-        statement->child_block_ != nullptr)
-        return true;
-    return false;
+	if (statement->tokens_.size() != 3 &&
+		statement->child_block_ != nullptr)
+		return true;
+	return false;
 }
 
-RequestHandler* RequestHandlerGenerator::createHandler(std::string path, std::string method, NginxConfig& config)
+RequestHandler *RequestHandlerGenerator::createHandler(std::string path, std::string method, NginxConfig &config)
 {
 	if (method == "StaticHandler")
 	{
@@ -110,13 +116,13 @@ RequestHandler* RequestHandlerGenerator::createHandler(std::string path, std::st
 	{
 		return StatusRequestHandler::Init(path, config);
 	}
-	else 
+	else
 	{
 		return nullptr;
 	}
 }
 
-bool RequestHandlerGenerator::get_map(NginxConfig* config)
+bool RequestHandlerGenerator::get_map(NginxConfig *config)
 {
 	for (const auto &statement : config->statements_)
 	{
@@ -126,19 +132,19 @@ bool RequestHandlerGenerator::get_map(NginxConfig* config)
 		if (find == statement->tokens_.begin())
 		{
 			std::string path, root, method = "";
-			if(invalid_config(statement))
+			if (invalid_config(statement))
 			{
 				return false;
 			}
-    		//assign values if keywords are found
+			//assign values if keywords are found
 			method = *(find + 2);
 			path = *(find + 1);
 
-			if(!is_quoted(&path))
+			if (!is_quoted(&path))
 				return false;
 
-			RequestHandler* rh = createHandler(path, method, *(statement->child_block_));
-			if(rh == nullptr)
+			RequestHandler *rh = createHandler(path, method, *(statement->child_block_));
+			if (rh == nullptr)
 			{
 				return false;
 			}

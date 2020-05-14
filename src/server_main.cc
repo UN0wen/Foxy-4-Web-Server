@@ -78,7 +78,6 @@ void init_logging()
 int main(int argc, char *argv[])
 {
   init_logging();
-  DataCollector::increment_request("test");
   try
   {
     if (argc != 2)

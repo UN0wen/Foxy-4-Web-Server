@@ -7,59 +7,81 @@
 #include <boost/log/trivial.hpp>
 
 #include "status_request_handler.h"
+#include <string>
+
+namespace status_response
+{
+  const std::string html_header_begin = "<!DOCTYPE html><html><body>";
+  const std::string title = "<head><title>Server Status</title></head>";
+  const std::string header_count = "<h1>Count for server's request and response</h1>";
+  const std::string header_map = "<h1>Path to RequestHandler</h1>";
+  const std::string request_count = "<p>Number of request received from URI ";
+  const std::string request_handler_header = "<p>URI prefix for ";
+
+  //single string token
+  const std::string for_token = "for";
+  const std::string status_token = " with status code ";
+  const std::string semicolon_token = " : ";
+  const std::string paragraph_end = "</p>";
+  const std::string html_header_end = "</body></html>";
+
+  std::string create_body()
+  {
+    std::string body = "";
+    body += html_header_begin;
+    body += title;
+    body += header_count;
+    std::map<std::string, std::map<std::string, int>>::iterator itr;
+    std::map<std::string, int>::iterator ptr;
+    for (itr = DataCollector::status_map.begin(); itr != DataCollector::status_map.end(); itr++)
+    {
+      for (ptr = itr->second.begin(); ptr != itr->second.end(); ptr++)
+      {
+        body += request_count;
+        body += itr->first;
+        body += status_token;
+        body += ptr->first;
+        body += semicolon_token;
+        body += std::to_string(ptr->second);
+        body += paragraph_end;
+      }
+    }
+    std::map<std::string, std::string>::iterator mtr;
+    body += header_map;
+    for (mtr = DataCollector::uri_request_handler.begin(); mtr != DataCollector::uri_request_handler.end(); mtr++)
+    {
+      body += request_handler_header;
+      body += mtr->second;
+      body += semicolon_token;
+      body += mtr->first;
+      body +=paragraph_end;
+    }
+    body += html_header_end;
+    return body;
+  }
+} // namespace status_response
 
 StatusRequestHandler::StatusRequestHandler()
 {
 }
 
-RequestHandler* StatusRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
+RequestHandler *StatusRequestHandler::Init(const std::string &location_path, const NginxConfig &config)
 {
-	StatusRequestHandler* status_request_handler = new StatusRequestHandler();
-	return status_request_handler;
+  StatusRequestHandler *status_request_handler = new StatusRequestHandler();
+  std::string temp = "Status Request Handler";
+	DataCollector::uri_request_handler[location_path] = temp;
+  return status_request_handler;
 }
 
-std::string StatusRequestHandler::convert_to_rawbody(Request request){
-  std::string req = "";
-  if(request.method_ == Request::MethodEnum::GET){
-    req += "GET";
-  }
-  else if(request.method_ == Request::MethodEnum::POST){
-    req += "POST";
-  }
-  else if(request.method_ == Request::MethodEnum::PUT){
-    req += "PUT";
-  }
-  else{
-    req += "UNKNOWN";
-  }
-  req += " ";
-  req += request.uri_;
-  req += " HTTP";
-  req += "/";
-  req += request.http_version_;
-  req += "\r\n";
-  std::map<std::string, std::string>::iterator it;
-  for(it = request.headers_.begin(); it != request.headers_.end(); it ++ ){
-        if(it->second!=""){
-          req += it->first;
-          req += ": ";
-          req += it->second;
-          req += "\r\n";
-        }   
-  }
-  req += "\r\n";
-  req += request.body_;
-  return req;
-}
 
 Response StatusRequestHandler::handle_request(const Request &request)
 {
+  BOOST_LOG_TRIVIAL(info) << "status request handler get called"; 
   Response response = Response();
-  std::string body = convert_to_rawbody(request);
-  response.body_ = body;
+  std::string body = status_response::create_body();
   response.code_ = Response::ok;
+  response.body_ = body;
   response.headers_["Content-Length"] = std::to_string(response.body_.size());
-  response.headers_["Content-Type"] = "text/plain";  
+  response.headers_["Content-Type"] = "text/html";
   return response;
 }
-

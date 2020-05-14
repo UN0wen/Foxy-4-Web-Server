@@ -19,6 +19,7 @@
 #include "session.h"
 #include "response.h"
 #include "request.h"
+#include "data_collector.h"
 
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
@@ -52,6 +53,7 @@ void Session::handle_bad_request()
 {
   BOOST_LOG_TRIVIAL(trace) << "generating bad request for client";
   Response response = ResponseGenerator::stock_response(Response::status_code::bad_request);
+  DataCollector::increment_request(request_.uri_, response.code_);
   response_generator_.init(response);
 }
 
@@ -66,6 +68,7 @@ void Session::handle_final_read(const boost::system::error_code &error,
 
   Response response = request_handler->handle_request(request_);
   deep_copy_response(response);
+  DataCollector::increment_request(request_.uri_, response.code_);
   boost::asio::async_write(socket_,
                            response_generator_.to_buffers(),
                            boost::bind(&Session::handle_write, this,
@@ -105,6 +108,7 @@ void Session::handle_read(const boost::system::error_code &error,
                               << ") passed, preparing response...";
       Response response = request_handler->handle_request(request_);
       deep_copy_response(response);
+      DataCollector::increment_request(request_.uri_, response.code_);
       boost::asio::async_write(socket_,
                                response_generator_.to_buffers(),
                                boost::bind(&Session::handle_write, this,

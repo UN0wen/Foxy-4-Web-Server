@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <boost/log/trivial.hpp>
 
+#include "data_collector.h"
 #include "echo_request_handler.h"
 
 EchoRequestHandler::EchoRequestHandler()
@@ -15,6 +16,8 @@ EchoRequestHandler::EchoRequestHandler()
 RequestHandler* EchoRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
 {
 	EchoRequestHandler* echo_request_handler = new EchoRequestHandler();
+  std::string temp = "Echo Request Handler";
+	DataCollector::uri_request_handler[location_path] = temp;
 	return echo_request_handler;
 }
 
