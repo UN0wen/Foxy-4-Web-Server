@@ -2,6 +2,7 @@
 #include <boost/log/trivial.hpp>
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
+#include "status_request_handler.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
 
@@ -101,9 +102,13 @@ RequestHandler* RequestHandlerGenerator::createHandler(std::string path, std::st
 	{
 		return StaticRequestHandler::Init(path, config);
 	}
-	if (method == "EchoHandler")
+	else if (method == "EchoHandler")
 	{
 		return EchoRequestHandler::Init(path, config);
+	}
+	else if (method == "StatusHandler")
+	{
+		return StatusRequestHandler::Init(path, config);
 	}
 	else 
 	{

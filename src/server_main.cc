@@ -30,6 +30,7 @@
 #include <thread>
 #include <map>
 
+#include "data_collector.h"
 #include "server.h"
 #include "config_parser.h"
 namespace expr = boost::log::expressions;
@@ -77,7 +78,7 @@ void init_logging()
 int main(int argc, char *argv[])
 {
   init_logging();
-
+  DataCollector::increment_request("test");
   try
   {
     if (argc != 2)
