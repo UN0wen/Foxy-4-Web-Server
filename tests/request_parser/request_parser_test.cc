@@ -123,15 +123,15 @@ TEST_F(RequestParserTest, GetRequestHeaders)
 
     for (auto it = request.headers_.begin(); it != request.headers_.end(); ++it)
     {
-        if (it->name == "Host" && it->value == "localhost:8000")
+        if (it->first == "Host" && it->second == "localhost:8000")
             host = true;
-        else if (it->name == "User-Agent" && it->value == "HTTPie/0.9.8")
+        else if (it->first == "User-Agent" && it->second == "HTTPie/0.9.8")
             user_agent = true;
-        else if (it->name == "Accept-Encoding" && it->value == "gzip, deflate")
+        else if (it->first == "Accept-Encoding" && it->second == "gzip, deflate")
             accept_encoding = true;
-        else if (it->name == "Accept" && it->value == "*/*")
+        else if (it->first == "Accept" && it->second == "*/*")
             accept = true;
-        else if (it->name == "Connection" && it->value == "keep-alive")
+        else if (it->first == "Connection" && it->second == "keep-alive")
             connection = true;
     }
 
@@ -174,9 +174,9 @@ TEST_F(RequestParserTest, PostRequestLength)
     int content_length;
     for (auto it = request.headers_.begin(); it != request.headers_.end(); ++it)
     {
-        if (it->name == "Content-Length")
+        if (it->first == "Content-Length")
         {
-            content_length = std::stoi(it->value);
+            content_length = std::stoi(it->second);
             break;
         }
     }
