@@ -34,5 +34,3 @@ class NginxConfig {
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   
 };
-
-bool is_quoted(std::string* s);

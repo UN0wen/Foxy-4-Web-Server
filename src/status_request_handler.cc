@@ -33,7 +33,11 @@ namespace status_response
     body += header_count;
     std::map<std::string, std::map<std::string, int>>::iterator itr;
     std::map<std::string, int>::iterator ptr;
-    for (itr = DataCollector::status_map.begin(); itr != DataCollector::status_map.end(); itr++)
+    DataCollector* data_collector = DataCollector::get_instance();
+    auto status_map = data_collector->status_map();
+    auto uri_request_handler = data_collector->uri_request_handler();
+
+    for (itr = status_map.begin(); itr != status_map.end(); itr++)
     {
       for (ptr = itr->second.begin(); ptr != itr->second.end(); ptr++)
       {
@@ -48,7 +52,7 @@ namespace status_response
     }
     std::map<std::string, std::string>::iterator mtr;
     body += header_map;
-    for (mtr = DataCollector::uri_request_handler.begin(); mtr != DataCollector::uri_request_handler.end(); mtr++)
+    for (mtr = uri_request_handler.begin(); mtr != uri_request_handler.end(); mtr++)
     {
       body += request_handler_header;
       body += mtr->second;
@@ -68,8 +72,7 @@ StatusRequestHandler::StatusRequestHandler()
 RequestHandler *StatusRequestHandler::Init(const std::string &location_path, const NginxConfig &config)
 {
   StatusRequestHandler *status_request_handler = new StatusRequestHandler();
-  std::string temp = "Status Request Handler";
-	DataCollector::uri_request_handler[location_path] = temp;
+  DataCollector::get_instance()->add_handler(location_path, "Status Request Handler");
   return status_request_handler;
 }
 

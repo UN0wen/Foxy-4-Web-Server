@@ -10,8 +10,7 @@ NotFoundRequestHandler::NotFoundRequestHandler()
 RequestHandler *NotFoundRequestHandler::Init(const std::string &location_path, const NginxConfig &config)
 {
   NotFoundRequestHandler *not_found_request_handler = new NotFoundRequestHandler();
-  std::string temp = "404 Not Found Request Handler";
-	DataCollector::uri_request_handler[location_path] = temp;
+  DataCollector::get_instance()->add_handler(location_path, "404 Not Found Request Handler");
   return not_found_request_handler;
 }
 

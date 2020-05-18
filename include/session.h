@@ -5,18 +5,19 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/log/trivial.hpp>
+#include <map>
+#include <boost/log/attributes/scoped_attribute.hpp>
+#include <boost/thread/thread.hpp>
 
 using boost::asio::ip::tcp;
 #include "response.h"
 #include "echo_request_handler.h"
 #include "request_parser.h"
 #include "static_request_handler.h"
-#include <boost/thread/thread.hpp>
-#include <boost/log/attributes/scoped_attribute.hpp>
 #include "request_handler.h"
 #include "request_handler_generator.h"
-#include <map>
 #include "response_generator.h"
+#include "data_collector.h"
 
 
 class Session
@@ -49,4 +50,5 @@ private:
   char data_[max_length];
   char buffer_[max_length];
   RequestHandlerGenerator generator_;
+  DataCollector* data_collector_ = nullptr;
 };

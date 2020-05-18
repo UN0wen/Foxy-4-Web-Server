@@ -9,6 +9,7 @@
 //
 
 #include "request_parser.h"
+#include "utility.h"
 #include <string.h>
 
 RequestParser::RequestParser()
@@ -38,12 +39,8 @@ RequestParser::result_type RequestParser::parse_data(Request &request, const cha
   std::tie(result, std::ignore) = parse(request, data, data + bytes_transferred);
 
   int char_amount = get_char_amount();
-  int content_length = 0;
-  std::string content_length_str = request.headers_["Content-Length"];
-  if (content_length_str != "")
-    {
-      content_length = std::stoi(content_length_str);
-    }
+  int content_length = utility::get_content_length(request);
+  
   if (content_length > 0 && char_amount == strlen(data))
   {
     return result = RequestParser::result_type::missing_data;

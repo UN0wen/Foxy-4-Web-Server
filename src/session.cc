@@ -6,20 +6,11 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
-#include <boost/move/utility_core.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/support/date_time.hpp>
-
 #include "session.h"
 #include "response.h"
 #include "request.h"
 #include "data_collector.h"
+#include "utility.h"
 
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
@@ -28,6 +19,7 @@ Session::Session(boost::asio::io_service &io_service, RequestHandlerGenerator ge
     : socket_(io_service),
       generator_(generator)
 {
+  data_collector_ = DataCollector::get_instance();
 }
 
 tcp::socket &Session::socket()
@@ -53,7 +45,7 @@ void Session::handle_bad_request()
 {
   BOOST_LOG_TRIVIAL(trace) << "generating bad request for client";
   Response response = ResponseGenerator::stock_response(Response::status_code::bad_request);
-  DataCollector::increment_request(request_.uri_, response.code_);
+  data_collector_->increment_request(request_.uri_, response.code_);
   response_generator_.init(response);
 }
 
@@ -68,7 +60,7 @@ void Session::handle_final_read(const boost::system::error_code &error,
 
   Response response = request_handler->handle_request(request_);
   deep_copy_response(response);
-  DataCollector::increment_request(request_.uri_, response.code_);
+  data_collector_->increment_request(request_.uri_, response.code_);
   boost::asio::async_write(socket_,
                            response_generator_.to_buffers(),
                            boost::bind(&Session::handle_write, this,
@@ -97,9 +89,8 @@ void Session::handle_read(const boost::system::error_code &error,
     RequestHandler *request_handler = generator_.dispatch_handler(request_.uri_).get();
     BOOST_LOG_TRIVIAL(warning) << "Request handler generator finish assigning specific request handler(" << remote_ip << ")";
     request_parser_.reset();
-    // Result for HTTP request is good, send out HTTP response with code 200 back to client
 
-    // TODO(Nelson and Duy): Need to Log the http request type(Post and Get).
+    // Result for HTTP request is good, send out HTTP response with code 200 back to client
 
     if (result == RequestParser::good)
     {
@@ -108,7 +99,7 @@ void Session::handle_read(const boost::system::error_code &error,
                               << ") passed, preparing response...";
       Response response = request_handler->handle_request(request_);
       deep_copy_response(response);
-      DataCollector::increment_request(request_.uri_, response.code_);
+      data_collector_->increment_request(request_.uri_, response.code_);
       boost::asio::async_write(socket_,
                                response_generator_.to_buffers(),
                                boost::bind(&Session::handle_write, this,
@@ -123,7 +114,8 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::missing_data)
     {
       BOOST_LOG_TRIVIAL(info) << "HTTP format check for IP (" << remote_ip << ")passed but message is missing data, fetching...";
-      //int content_length = request_.get_content_length();
+      
+      int content_length = utility::get_content_length(request_);
       socket_.async_read_some(boost::asio::buffer(buffer_, max_length),
                               boost::bind(&Session::handle_final_read, this,
                                           boost::asio::placeholders::error,
@@ -133,8 +125,6 @@ void Session::handle_read(const boost::system::error_code &error,
     else if (result == RequestParser::bad)
     {
       BOOST_LOG_TRIVIAL(warning) << "HTTP format check failed from IP (" << remote_ip << "), preparing response...";
-      //TODO: THIS IS JUST TO CORRESPONDING TO THE CURRENT INTEGRATION TEST FOR BAD REQUEST HANDLING.
-      //response_ = Response::stock_response(Response::bad_request); //THIS IS FOR STATIC RESPONSE HANDLER WAY TO DEAL WITH BAD REQUEST
       handle_bad_request();
       boost::asio::async_write(socket_,
                                response_generator_.to_buffers(),

@@ -1,9 +1,10 @@
-#include "request_handler_generator.h"
 #include <boost/log/trivial.hpp>
+#include "request_handler_generator.h"
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
 #include "status_request_handler.h"
 #include "not_found_request_handler.h"
+#include "utility.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
 
@@ -145,7 +146,7 @@ bool RequestHandlerGenerator::get_map(NginxConfig *config)
 			method = *(find + 2);
 			path = *(find + 1);
 
-			if (!is_quoted(&path))
+			if (!utility::is_quoted(&path))
 				return false;
 
 			RequestHandler *rh = createHandler(path, method, *(statement->child_block_));

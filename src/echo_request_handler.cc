@@ -16,8 +16,7 @@ EchoRequestHandler::EchoRequestHandler()
 RequestHandler* EchoRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
 {
 	EchoRequestHandler* echo_request_handler = new EchoRequestHandler();
-  std::string temp = "Echo Request Handler";
-	DataCollector::uri_request_handler[location_path] = temp;
+  DataCollector::get_instance()->add_handler(location_path, "Echo Request Handler");
 	return echo_request_handler;
 }
 

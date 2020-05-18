@@ -18,21 +18,7 @@
 #include "config_parser.h"
 #include "static_request_handler.h"
 #include "echo_request_handler.h"
-#include <boost/algorithm/string/predicate.hpp>
-
-bool is_quoted(std::string* s)
-{
-    if(!boost::starts_with(*s, "\"") ||
-       !boost::ends_with(*s, "\""))
-    {
-        return false;
-    }
-    s->erase(0,1);
-    s->erase(s->size()-1);
-    if(!boost::ends_with(*s, "/"))
-        *s += "/";
-    return true;
-}
+#include "utility.h"
 
 bool NginxConfig::valid_keyword_listen(std::vector<std::string>::iterator find,
                                        const auto &statement)
@@ -98,7 +84,7 @@ bool NginxConfig::get_dir(std::string* dir)
     if (valid_keyword_listen(find, statement))
     {
       *dir = *(find + 1);
-      if(!is_quoted(dir))
+      if(!utility::is_quoted(dir))
         return false;
       return true;
     }

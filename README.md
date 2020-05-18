@@ -15,14 +15,14 @@
       - [Adding path to configuration file](#adding-path-to-configuration-file)
       - [Registering your handler with the dispatcher and data collector](#registering-your-handler-with-the-dispatcher-and-data-collector)
         - [Dispatcher](#dispatcher)
-        - [Data collector](#data-collector)
+        - [Data Collector](#data-collector)
       - [Adding implementation and tests](#adding-implementation-and-tests)
       - [Naming conventions](#naming-conventions)
     - [Useful utility methods](#useful-utility-methods)
       - [mime_types](#mimetypes)
       - [ResponseGenerator](#responsegenerator)
-      - [Config](#config)
       - [Logging](#logging)
+      - [Utility namespace](#utility-namespace)
     - [Example Request Handler Implementation](#example-request-handler-implementation)
       - [Header](#header)
       - [Definition](#definition)
@@ -145,7 +145,7 @@ location <path> <HandlerName> {
 + `<HandleName>` [String]: The name of the handler, used to register the handler with the server
 + `<args>`: Any number of argument lines that the request handler can parse. One such example is `root <root_path>;`.
 
-In the configuration file, all paths are assumed to be directory paths. If they are not e.g. `/static` instead of `/static/`, they should be turned into one by using `is_quoted()`.
+In the configuration file, all paths are assumed to be directory paths. If they are not e.g. `/static` instead of `/static/`, they should be turned into one by using `utility::is_quoted()`.
 
 #### Registering your handler with the dispatcher and data collector
 
@@ -156,16 +156,18 @@ Our request handler dispatcher class is `RequestHandlerGenerator`. In order to r
 + Call `<YourHandlerClass>::Init()` with the given `path` (route location) and scoped config block `NginxConfig& config`.
 + Return a `RequestHandler*`. The pointer will be converted to a smart pointer in our dispatcher class, and the route to handler mapping will be registered as well.
 
-##### Data collector
+##### Data Collector
 You will also want to register your handler with our data collector class `DataCollector`, which is used to collect route and handler data for the `/status` route.
 
 In order to do this, add the following in your Init() function:
 
 ```c++
-DataCollector::uri_request_handler[<path>] = "Your Handler Name Here";
+DataCollector::get_instance()->add_handler(location_path, "Your Handler Name Here";
 ```
 
-where `<path>` is the same variable that was passed to `Init()` in [the previous section](#dispatcher), and the string assigned to the data collector is the name you want your handler to show up as in our status page.
+where `<location_path>` is the same variable that was passed to `Init()` in [the previous section](#dispatcher), and the string assigned to the data collector is the name you want your handler to show up as in our status page.
+
+Under the hood, `DataCollector` is implemented as a singleton class that you can get an instance of by calling `DataCollector::get_instance()`.
 
 #### Adding implementation and tests
 Your source code file should be in `/src/`, and your header file should be in `/include/`. When adding unit tests, add a folder in `/tests/` with your handler file name `/tests/<name>-request-handler`, and leave your unit tests in this directory. Finally add your class to `CMakeLists.txt`, following the same procedure as laid out in the class website. 
@@ -185,18 +187,8 @@ Converts a file extension string to the corresponding Content-Type header.
 #### ResponseGenerator
 ```c++
 Response ResponseGenerator::stock_response(Response::status_code status)
-
 ```
 Generate a template Response object with the provided status code and a generic HTML body with the status code string. The returned Response object contains sufficient information to be sent to the client.
-
-#### Config
-```c++
-bool is_quoted(std::string* s)
-```
-Check if the string s is contained in quotes, useful for checking string arguments in the config file. If s is enclosed in quotes, the quotes are then removed. If s is not a directory path, it is turned into one (by adding / to the end). 
-
-```c++
-```
 
 #### Logging
 Logging is done by calling 
@@ -207,7 +199,20 @@ BOOST_LOG_TRIVIAL(<log_severity>) << <log_message>
 + `<log_severity>`: one of trace, debug, info, warning, error, fatal
 + `<log_message>`: your log message
 
+#### Utility namespace
+`utility.h` currently contains two utility functions:
 
+```c++
+bool is_quoted(std::string* s)
+```
+Check if the string s is contained in quotes, useful for checking string arguments in the config file. If s is enclosed in quotes, the quotes are then removed. If s is not a directory path, it is turned into one (by adding / to the end). 
+
+
+```c++
+int get_content_length(Request& request)
+```
+Returns the value of the `content-length` header in `request` if it exists, and returns 0 otherwise.
+s
 ### Example Request Handler Implementation
 
 Our `StaticRequestHandler` will be used as the example in this section.
@@ -272,7 +277,7 @@ This code block is used to find the "root" token in the scoped config block
 ```c++
     std::string root = "";
 
-    if(!is_quoted(&root))
+    if(!utility::is_quoted(&root))
         return nullptr;
 
     // Allocate on heap with new, and return a pointer
@@ -280,7 +285,7 @@ This code block is used to find the "root" token in the scoped config block
     return static_request_handler;
 }
 ```
-The is_quoted function is used to force all paths in config to end with `/` as well as checking that all paths in config are surrounded by quotes. Then, a new handler is allocated on the heap and returned as a pointer.
+The `is_quoted` function is used to force all paths in config to end with `/` as well as checking that all paths in config are surrounded by quotes. Then, a new handler is allocated on the heap and returned as a pointer.
 
 ```c++
 Response StaticRequestHandler::handle_request(const Request &request)

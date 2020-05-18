@@ -16,6 +16,7 @@
 #include <boost/log/trivial.hpp>
 #include "mime_types.h"
 #include "data_collector.h"
+#include "utility.h"
 
 StaticRequestHandler::StaticRequestHandler(const std::string &root, const std::string &path)
     : root_(root), path_(path)
@@ -25,8 +26,7 @@ StaticRequestHandler::StaticRequestHandler(const std::string &root, const std::s
 RequestHandler* StaticRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
 {
     std::string root = "";
-    std::string temp = "Static Request Handler";
-	DataCollector::uri_request_handler[location_path] = temp;
+    DataCollector::get_instance()->add_handler(location_path, "Static Request Handler");
     for (const auto &s : config.statements_)
     {
         std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
@@ -37,7 +37,7 @@ RequestHandler* StaticRequestHandler::Init(const std::string& location_path, con
             root = *(find_root + 1);
         }
     }
-    if(!is_quoted(&root))
+    if(!utility::is_quoted(&root))
         return nullptr;
 
     StaticRequestHandler* static_request_handler = new StaticRequestHandler(root, location_path);
