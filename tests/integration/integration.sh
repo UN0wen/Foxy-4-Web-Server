@@ -4,7 +4,7 @@ ERROR=0
 
 #test server using integration.conf
 
-printf "listen 8000; \nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \n location \"/echo/\" EchoHandler{\n}" >integration.conf
+printf "listen 8000;\nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \n location \"/echo/\" EchoHandler{\n}" >integration.conf
 
 SERVER_EXECUTABLE=$1
 $SERVER_EXECUTABLE integration.conf &
@@ -57,6 +57,30 @@ else
 	echo "Bad request test fail."
 	ERROR=1
 fi
+
+#multithread test
+
+#connection that stays open
+printf printf "GET / HTTP/1.1\r\n" | nc localhost 8000&
+
+sleep 0.5
+
+#repeat basic curl test, should stall if no multithread
+if  timeout 1 curl -s localhost:8000/echo | \
+	tr "\n\r" " "| \
+	grep "GET /echo HTTP/1.1" | \
+	grep "Host:" | \
+	grep "User-Agent:" | \
+	grep "Accept:" > /dev/null;
+then
+	echo "	Basic echo curl test success."
+else
+	echo "	Basic echo curl test fail."
+	ERROR=1
+fi
+
+#kill the incomplete nc
+pkill nc
 
 #cleanup
 pkill server

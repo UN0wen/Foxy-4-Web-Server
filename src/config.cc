@@ -73,6 +73,35 @@ bool NginxConfig::get_port(int *port)
   return false;
 }
 
+bool NginxConfig::get_threads(int *threads)
+{
+  for (const auto &statement : statements_)
+  {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
+                                                        statement->tokens_.end(),
+                                                        "threads");
+
+    if (valid_keyword_listen(find, statement))
+    {
+      std::string threadstring = *(find + 1);
+      if (threadstring.find_first_not_of("0123456789") == std::string::npos)
+      {
+        *threads = std::stoi(threadstring);
+        return true;
+      }
+      else
+      { 
+        return false;
+      }
+    }
+    if (statement->child_block_.get() != nullptr)
+    {
+      return statement->child_block_->get_threads(threads);
+    };
+  }
+  return false;
+}
+
 bool NginxConfig::get_dir(std::string* dir)
 {
   for (const auto &statement : statements_)

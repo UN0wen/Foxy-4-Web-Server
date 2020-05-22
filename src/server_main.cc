@@ -93,12 +93,14 @@ int main(int argc, char *argv[])
     NginxConfig config;
 
     int port;
+    int threads = 4; //default number of threads
     std::string dir = "";
     std::map<std::string, std::shared_ptr<RequestHandler>> mapping;
 
     bool parse_success = config_parser.Parse(argv[1], &config);
     bool get_port = config.get_port(&port);
     bool get_dir = config.get_dir(&dir);
+    bool get_threads = config.get_threads(&threads);
 
     RequestHandlerGenerator generator;
     bool get_map = generator.get_map(&config);
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
       BOOST_LOG_TRIVIAL(trace) << "Starting server now";
       boost::asio::io_service io_service;
 
-      Server s(io_service, port, generator);
+      Server s(io_service, port, generator, threads);
       io_service.run();
     }
     else

@@ -84,12 +84,29 @@ void Session::handle_read(const boost::system::error_code &error,
                             << ")...handling request";
     // Prechecking if an incoming HTTP message is valid or not
     request_ = Request();
-    RequestParser::result_type result = request_parser_.parse_data(request_, data_, bytes_transferred);
+    RequestParser::result_type result = RequestParser::indeterminate;
+    result = request_parser_.parse_data(request_, data_, bytes_transferred);
+    boost::system::error_code error;
+
+    while(result == RequestParser::indeterminate)
+    {
+      boost::asio::read(socket_, boost::asio::buffer(data_, max_length), boost::asio::transfer_at_least(1), error);
+      result = request_parser_.parse_data(request_, data_, bytes_transferred);
+      request_parser_.reset();
+      if(error)
+        break;
+    }
+
+    if(error)
+    {
+      BOOST_LOG_TRIVIAL(warning) << "Invalid or incomplete request for IP (" << remote_ip <<") closing...";
+      return;
+    }
+
     BOOST_LOG_TRIVIAL(warning) << "Request Parser finish parsing request (" << remote_ip << ")";
     RequestHandler *request_handler = generator_.dispatch_handler(request_.uri_).get();
     BOOST_LOG_TRIVIAL(warning) << "Request handler generator finish assigning specific request handler(" << remote_ip << ")";
     request_parser_.reset();
-
     // Result for HTTP request is good, send out HTTP response with code 200 back to client
 
     if (result == RequestParser::good)

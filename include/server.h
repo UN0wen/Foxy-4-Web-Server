@@ -14,7 +14,7 @@ class Server
 {
 
 public:
-    Server(boost::asio::io_service &io_service, short port, RequestHandlerGenerator generator);
+    Server(boost::asio::io_service &io_service, short port, RequestHandlerGenerator generator, int num_threads);
 
 private:
     void start_accept();
@@ -25,4 +25,5 @@ private:
     boost::asio::io_service &io_service_;
     tcp::acceptor acceptor_;
     RequestHandlerGenerator generator_;
+    int num_threads_;
 };
