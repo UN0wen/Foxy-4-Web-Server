@@ -80,6 +80,7 @@ add_executable(not_found_request_handler_test tests/not_found_request_handler/no
 add_executable(request_parser_test tests/request_parser/request_parser_test.cc)
 add_executable(response_generator_test tests/response_generator/response_generator_test.cc)
 add_executable(request_handler_generator_test tests/request_handler_generator/request_handler_generator_test.cc)
+add_executable(proxy_request_handler_test tests/proxy_request_handler/proxy_request_handler_test.cc)
 
 target_link_libraries(config_test config_parser gtest_main Boost::system)
 target_link_libraries(config_parser_test config config_parser config_statement gtest_main Boost::system)
@@ -87,8 +88,9 @@ target_link_libraries(echo_request_handler_test echo_request_handler gtest_main 
 target_link_libraries(static_request_handler_test static_request_handler  config config_parser mime_types  gtest_main Boost::system Boost::log)
 target_link_libraries(request_parser_test request_parser gtest_main Boost::system)
 target_link_libraries(response_generator_test response_generator gtest_main Boost::system)
-target_link_libraries(request_handler_generator_test request_handler_generator echo_request_handler static_request_handler config config_parser gtest_main Boost::system Boost::log)
+target_link_libraries(request_handler_generator_test request_handler_generator proxy_request_handler echo_request_handler static_request_handler config config_parser gtest_main Boost::system Boost::log)
 target_link_libraries(not_found_request_handler_test not_found_request_handler gtest_main Boost::system)
+target_link_libraries(proxy_request_handler_test proxy_request_handler response_generator data_collector utility config config_parser mime_types gtest_main Boost::system Boost::log)
 
 gtest_discover_tests(config_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config)
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
@@ -98,9 +100,10 @@ gtest_discover_tests(not_found_request_handler_test WORKING_DIRECTORY ${CMAKE_CU
 gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
 gtest_discover_tests(response_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/response_generator)
 gtest_discover_tests(request_handler_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler_generator)
+gtest_discover_tests(proxy_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/proxy_request_handler)
 add_test(NAME integration_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
 
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server server_lib session config config_parser config_statement utility response_generator static_request_handler echo_request_handler Boost::system request_parser status_request_handler not_found_request_handler
+generate_coverage_report(TARGETS server server_lib session config config_parser config_statement utility response_generator static_request_handler echo_request_handler Boost::system request_parser status_request_handler not_found_request_handler proxy_request_handler
   TESTS config config_parser_test config_statement config_test config_parser_test request_handler_generator_test request_parser_test
-  response_generator_test static_request_handler_test echo_request_handler_test not_found_request_handler_test)
+  response_generator_test static_request_handler_test echo_request_handler_test not_found_request_handler_test proxy_request_handler_test)

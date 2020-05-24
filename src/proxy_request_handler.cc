@@ -93,7 +93,6 @@ Response ProxyRequestHandler::handle_request(const Request &request)
     return_response.body_ = "";
 	BOOST_LOG_TRIVIAL(trace) << "Proxy Request: " << request.uri_;
 
-    
 	std::string raw_req = convert_to_rawbody(request);
     //we probably don't need this complete_address so commenting out for now but may be useful later
     //std::string complete_address = root_.substr(0,root_.length()-1) + ":" + std::to_string(port_);
@@ -102,7 +101,6 @@ Response ProxyRequestHandler::handle_request(const Request &request)
     {
         boost::asio::io_service io_service;
         std::ostringstream ss;
-
         // Get a list of endpoints corresponding to the server name.
         tcp::resolver resolver(io_service);
         //boost::system::error_code ec;
