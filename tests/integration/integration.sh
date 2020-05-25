@@ -6,6 +6,7 @@ ERROR=0
 
 printf "listen 8000;\nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \n location \"/echo/\" EchoHandler{\n}" >integration.conf
 
+
 SERVER_EXECUTABLE=$1
 $SERVER_EXECUTABLE integration.conf &
 
@@ -120,3 +121,5 @@ else
 	echo "All tests finished with some failed."
 	exit 1
 fi
+
+
