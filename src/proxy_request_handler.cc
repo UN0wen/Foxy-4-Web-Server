@@ -109,6 +109,17 @@ Response ProxyRequestHandler::handle_request(const Request &client_request)
     std::string root = root_;
     size_t loop_count = 0;
 
+    // Get the local server host name
+    std::string server_addr;
+    for (auto it = client_request.headers_.begin(); it != client_request.headers_.end(); ++it) {
+        if (it->first == "Host") {
+            server_addr = it->second;
+            size_t temp_pos = server_addr.find(":");
+            if (temp_pos != std::string::npos)
+                server_addr = server_addr.substr(0, temp_pos);
+        }
+    }
+
     try {
         // looping limit is set to 5 for now (to prevent inf. loop)
         while (loop_count < 5) {
@@ -177,7 +188,7 @@ Response ProxyRequestHandler::handle_request(const Request &client_request)
             // checks for redirection. if true, reassign the root and repeat
             if (status_code == 301 || status_code == 302) {
                 std::string new_root = return_response.headers_["Location"];
-                if (new_root.find("localhost") != std::string::npos) {
+                if (new_root.find(server_addr) != std::string::npos) {
                     size_t pos = new_root.find("//");
                     if (pos != std::string::npos) {
                         new_root = new_root.substr(pos+2);

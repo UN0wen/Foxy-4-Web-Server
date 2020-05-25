@@ -113,6 +113,62 @@ else
 	echo "Missing arguments test failed."
 fi
 
+#proxy test
+printf "listen 8080;\nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \nlocation \"/echo/\" EchoHandler{\n} \nlocation \"/prox/\" ProxyHandler {\nhost \"localhost\";\nport 8000;\n} \n " >prox_integration.conf
+printf "listen 8000;\nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \nlocation \"/echo/\" EchoHandler{\n}" >integration.conf
+$SERVER_EXECUTABLE integration.conf &
+SERVER_PID=$!
+$SERVER_EXECUTABLE prox_integration.conf &
+SERVER_PID1=$! 
+
+
+cat test_output.txt | curl localhost:8080/prox/echo/ -i -o test_output.txt -s  &
+REQ_PID=$! 
+
+
+sleep 1
+kill -9 $SERVER_PID
+
+cat test_output.txt > out.txt
+
+diff --strip-trailing-cr <(head -n 2 $"../tests/integration/proxy_integration_test") <(head -n 2 $"out.txt")
+if [[ $? -eq 0 ]]; then
+    echo "SUCCESS";
+    kill -9 $SERVER_PID1
+    exit 0;
+else
+    echo "FAIL";
+    kill -9 $SERVER_PID1
+    exit 1;
+fi
+
+
+
+# printf "HTTP/1.1 200 OK \
+# Content-Length: 83 \
+# Content-Type: text/plain \
+# \
+# GET /echo/ HTTP/1.1 \
+# Accept: */* \
+# Host: localhost:8080 \
+# User-Agent: curl/7.58.0 \
+# " > ans
+
+# if  curl localhost:8080/echo/ -i -o test_output -s | \
+# 	tr "\n\r" " "| \
+# 	grep "Content-Type:"  > /dev/null;
+# then
+# 	echo "	Proxy curl test success."
+# 	cat test_output > output.txt
+# else
+# 	echo "	Proxy echo curl test fail."
+# 	cat test_output > output.txt
+# 	ERROR=1
+# fi
+
+kill -9 $SERVER_PID
+
+
 if [ $ERROR -eq 0 ]
 then 
 	echo "All tests finished and passed."
