@@ -249,6 +249,7 @@ bool ProxyRequestHandler::parse_header(const std::string &header, Response &resp
     size_t pos = header.find(":");
     std::string head  = header.substr(0,pos);
     std::string value = header.substr(pos+2);
+    value.pop_back();
     response.headers_[head] = value;
     return true;
 }
