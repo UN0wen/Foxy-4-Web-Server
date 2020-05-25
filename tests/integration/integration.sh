@@ -121,6 +121,7 @@ SERVER_PID=$!
 $SERVER_EXECUTABLE prox_integration.conf &
 SERVER_PID1=$! 
 
+sleep 2
 
 cat test_output.txt | curl localhost:8080/prox/echo/ -i -o test_output.txt -s  &
 REQ_PID=$! 
