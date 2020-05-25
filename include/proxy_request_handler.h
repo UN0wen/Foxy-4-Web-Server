@@ -16,8 +16,14 @@ public:
 	static RequestHandler* Init(const std::string& location_path, const NginxConfig& config);
 	Response handle_request(const Request &request);
 private:
-	std::string convert_to_rawbody(Request request);
 	std::string root_;
 	std::string path_;
 	int port_;
+    
+    std::string convert_to_rawbody(Request request, bool isRedirect);
+    bool parse_header(const std::string &header, Response &response);
+    std::string clean_html(std::string &body);
+    size_t hex_to_uint(const std::string &hex);
+    std::string uint_to_hex(const size_t value);
+    std::string redirect_request(std::string &new_root, const Request &client_request);
 };
