@@ -50,17 +50,20 @@ Response StaticRequestHandler::handle_request(const Request &request)
     Response response = Response();
     std::string request_path;
 
-    BOOST_LOG_TRIVIAL(info) << "Request URI " << request.uri_;
     if (!check_request_path(request.uri_, request_path))
     {
-        BOOST_LOG_TRIVIAL(error) << "Request URI contains error(s)... returning 400 response";
+        BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] Error: Request URI contains errors.";
         response = ResponseGenerator::stock_response(Response::bad_request);
         return response;
     }
 
+    if (request_path == "") {
+        request_path = "/";
+    }
+
     if (!replace_path(request_path))
     {
-        BOOST_LOG_TRIVIAL(error) << "Static handler's path not found in URI... returning 500 response";
+        BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] Error: path not found in URI.";
         
         response = ResponseGenerator::stock_response(Response::internal_server_error);
         return response;
@@ -70,7 +73,6 @@ Response StaticRequestHandler::handle_request(const Request &request)
 
     // Open the file to send back.
     std::string full_path = request_path;
-    BOOST_LOG_TRIVIAL(info) << "Full path " << full_path;
     std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
     if (!is)
     {
@@ -85,9 +87,10 @@ Response StaticRequestHandler::handle_request(const Request &request)
         response.body_.append(buf, is.gcount());
 
     //response.headers.resize(2);
-    response.headers_["Content-Length"] = std::to_string(response.body_.size());
+    std::string content_length = std::to_string(response.body_.size());
+    response.headers_["Content-Length"] = content_length;
     response.headers_["Content-Type"] = mime_types::extension_to_type(extension);
-    BOOST_LOG_TRIVIAL(info) << "static request handler finish preparing response with content length of " << response.headers_["Content-Length"];  
+    BOOST_LOG_TRIVIAL(info) << "[StaticRequestHandler] [Response] Content-Length: " << content_length;
     return response;
 }
 

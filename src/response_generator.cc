@@ -254,11 +254,6 @@ Response ResponseGenerator::stock_response(Response::status_code status)
   Response rep;
   rep.code_ = status;
   rep.body_ = stock_reply::to_string(status);
-  // rep.headers_.resize(2);
-  // rep.headers_[0].name = "Content-Length";
-  // rep.headers_[0].value = std::to_string(rep.content.size());
-  // rep.headers_[1].name = "Content-Type";
-  // rep.headers_[1].value = "text/html";
   
   rep.headers_["Content-Length"] = std::to_string(rep.body_.size());
   rep.headers_["Content-Type"] = "text/html";

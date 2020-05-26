@@ -1,9 +1,9 @@
 HTTP/1.1 200 OK
-Content-Length: 83
+Content-Length: 102
 Content-Type: text/plain
 
 GET /echo/ HTTP/1.0
 Accept: */*
+Connection: close
 Host: localhost:8080
 User-Agent: curl/7.58.0
-

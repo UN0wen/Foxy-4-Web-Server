@@ -1,7 +1,7 @@
 #include "data_collector.h"
 #include <mutex>
 
-DataCollector* DataCollector::singleton_ = nullptr;
+DataCollector *DataCollector::singleton_ = nullptr;
 std::mutex m;
 
 DataCollector *DataCollector::get_instance()
@@ -58,7 +58,7 @@ std::string DataCollector::map_status_to_string(Response::status_code status_cod
 
 void DataCollector::increment_request(std::string uri, Response::status_code status_code)
 {
-	  m.lock();
+      m.lock();
       //do stuff here
       std::string status = map_status_to_string(status_code);
       if (status_map_.count(uri) == 1)
@@ -80,6 +80,7 @@ void DataCollector::increment_request(std::string uri, Response::status_code sta
       return;
 }
 
-void DataCollector::add_handler(std::string path, std::string handler_name) {
+void DataCollector::add_handler(std::string path, std::string handler_name)
+{
       uri_request_handler_[path] = handler_name;
 }

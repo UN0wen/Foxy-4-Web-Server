@@ -62,7 +62,7 @@ fi
 #multithread test
 
 #connection that stays open
-printf printf "GET / HTTP/1.1\r\n" | nc localhost 8000&
+printf "GET / HTTP/1.1\r\n" | nc localhost 8000&
 
 sleep 0.5
 
@@ -121,29 +121,24 @@ SERVER_PID=$!
 $SERVER_EXECUTABLE prox_integration.conf &
 SERVER_PID1=$! 
 
-sleep 2
-
-cat test_output.txt | curl localhost:8080/prox/echo/ -i -o test_output.txt -s  &
-REQ_PID=$! 
-
-
 sleep 1
-kill -9 $SERVER_PID
 
-cat test_output.txt > out.txt
+curl localhost:8080/prox/echo/ -i -o proxy_output.txt -s  -H 'Connection: close'
+curl localhost:8000/echo/ -i -o echo_output.txt -s  -H 'Connection: close'
 
-diff --strip-trailing-cr <(head -n 2 $"../tests/integration/proxy_integration_test") <(head -n 2 $"out.txt")
+# kill -9 $SERVER_PID
+
+diff --strip-trailing-cr <(head -n 3 $"echo_output.txt") <(head -n 3 $"proxy_output.txt")
 if [[ $? -eq 0 ]]; then
-    echo "SUCCESS";
-    kill -9 $SERVER_PID1
-    exit 0;
+    echo "SUCCESS"
+    #kill -9 $SERVER_PID1
 else
-    echo "FAIL";
-    kill -9 $SERVER_PID1
-    exit 1;
+    echo "FAIL"
+    #kill -9 $SERVER_PID1
+    ERROR=1
 fi
 
-
+pkill server
 
 # printf "HTTP/1.1 200 OK \
 # Content-Length: 83 \
@@ -167,8 +162,7 @@ fi
 # 	ERROR=1
 # fi
 
-kill -9 $SERVER_PID
-
+#kill -9 $SERVER_PID
 
 if [ $ERROR -eq 0 ]
 then 

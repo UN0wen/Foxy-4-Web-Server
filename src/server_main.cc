@@ -30,7 +30,6 @@
 #include <thread>
 #include <map>
 
-#include "data_collector.h"
 #include "server.h"
 #include "config_parser.h"
 namespace expr = boost::log::expressions;
@@ -43,7 +42,7 @@ using boost::asio::ip::tcp;
 
 void signal_handler(int signum)
 {
-  BOOST_LOG_TRIVIAL(fatal) << "Server terminated successfully with interrupt signal: " << signum;
+  BOOST_LOG_TRIVIAL(fatal) << "[Server] Server terminated successfully with interrupt signal: " << signum;
   exit(0);
 }
 
@@ -110,8 +109,8 @@ int main(int argc, char *argv[])
       {
         chdir(dir.c_str());
       }
-      BOOST_LOG_TRIVIAL(trace) << "Config was parsed successfully";
-      BOOST_LOG_TRIVIAL(trace) << "Starting server now";
+      BOOST_LOG_TRIVIAL(info) << "[Server] Config was parsed successfully";
+      BOOST_LOG_TRIVIAL(info) << "[Server] Starting server now at port " << port;
       boost::asio::io_service io_service;
 
       Server s(io_service, port, generator, threads);
@@ -119,7 +118,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-      BOOST_LOG_TRIVIAL(error) << "Invalid Config";
+      BOOST_LOG_TRIVIAL(error) << "[Server] Invalid config";
       return 1;
     }
   }

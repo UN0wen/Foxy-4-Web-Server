@@ -11,10 +11,7 @@
 
 using boost::asio::ip::tcp;
 #include "response.h"
-#include "echo_request_handler.h"
 #include "request_parser.h"
-#include "static_request_handler.h"
-#include "request_handler.h"
 #include "request_handler_generator.h"
 #include "response_generator.h"
 #include "data_collector.h"
@@ -35,7 +32,7 @@ private:
 
   // Handles the additional read in case the initial message is missing data
   void handle_final_read(const boost::system::error_code& error,
-      size_t bytes_transferred, RequestHandler* request_handler);
+      size_t bytes_transferred);
 
   void handle_write(const boost::system::error_code& error);
   Response process_request(bool status);

@@ -7,14 +7,10 @@
 // How Nginx does it:
 //   http://lxr.nginx.org/source/src/core/ngx_conf_file.c
 
-#include <cstdio>
 #include <fstream>
-#include <iostream>
-#include <memory>
 #include <stack>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include "config_parser.h"
 

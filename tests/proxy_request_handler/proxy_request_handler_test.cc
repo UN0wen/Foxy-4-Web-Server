@@ -5,7 +5,7 @@
 class ProxyRequestHandlerTest : public ::testing::Test
 {
 protected:
-    ProxyRequestHandler request_handler = ProxyRequestHandler("ucla.edu/", "/ucla/", 80);
+    ProxyRequestHandler request_handler = ProxyRequestHandler("ucla.edu", "/ucla/", 80);
 
     Request request;
     

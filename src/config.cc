@@ -7,21 +7,14 @@
 // How Nginx does it:
 //   http://lxr.nginx.org/source/src/core/ngx_conf_file.c
 
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <stack>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include "config_parser.h"
-#include "static_request_handler.h"
-#include "echo_request_handler.h"
 #include "utility.h"
 
 bool NginxConfig::valid_keyword_listen(std::vector<std::string>::iterator find,
-                                       const auto &statement)
+                                       const std::shared_ptr<NginxConfigStatement> &statement)
 {
     if (find != statement->tokens_.end() &&
         find != std::prev(statement->tokens_.end()) &&

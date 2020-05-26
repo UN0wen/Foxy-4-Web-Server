@@ -25,7 +25,7 @@ class NginxConfigStatement {
 class NginxConfig {
  private:
   bool valid_keyword_listen(std::vector<std::string>::iterator find,
-			    const auto &statement);
+			    const std::shared_ptr<NginxConfigStatement> &statement);
  public:
   std::string ToString(int depth = 0);
   //gets the port number specified in nginx file

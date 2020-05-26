@@ -5,13 +5,13 @@
 #include "status_request_handler.h"
 #include "not_found_request_handler.h"
 #include "proxy_request_handler.h"
+#include "health_request_handler.h"
 #include "utility.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
 
 int RequestHandlerGenerator::common_prefix_length(std::string a, std::string b)
 {
-	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator is finding common prefix";
 	std::vector<std::string> v1;
 	std::vector<std::string> v2;
 	char s1[a.size() + 1];
@@ -88,12 +88,11 @@ std::shared_ptr<RequestHandler> RequestHandlerGenerator::dispatch_handler(std::s
 			longest_length = current_length;
 		}
 	}
-	//TODO: if longest PATH is 0, then 404 handler will be taken place (Assign to whoever work on 404 handler)
 	if (longest_length == 0)
 	{
 		return map_["/"];
 	}
-	BOOST_LOG_TRIVIAL(warning) << "Request Parser generator find longest_path: " << longest_path;
+	BOOST_LOG_TRIVIAL(trace) << "[RequestParserGenerator] Found longest path: " << longest_path;
 	return map_[longest_path];
 }
 
@@ -126,6 +125,10 @@ RequestHandler *RequestHandlerGenerator::createHandler(std::string path, std::st
 	else if (method == "ProxyHandler")
 	{
 		return ProxyRequestHandler::Init(path, config);
+	}
+	else if (method == "HealthHandler")
+	{
+		return HealthRequestHandler::Init(path, config);
 	}
 	else
 	{

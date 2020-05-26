@@ -79,7 +79,6 @@ RequestHandler *StatusRequestHandler::Init(const std::string &location_path, con
 
 Response StatusRequestHandler::handle_request(const Request &request)
 {
-  BOOST_LOG_TRIVIAL(info) << "status request handler get called"; 
   Response response = Response();
   std::string body = status_response::create_body();
   response.code_ = Response::ok;
