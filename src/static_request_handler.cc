@@ -47,6 +47,7 @@ RequestHandler* StaticRequestHandler::Init(const std::string& location_path, con
 Response StaticRequestHandler::handle_request(const Request &request)
 {
     // Decode url to path.
+    BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] static request handler is handling request.";
     Response response = Response();
     std::string request_path;
 
@@ -90,7 +91,8 @@ Response StaticRequestHandler::handle_request(const Request &request)
     std::string content_length = std::to_string(response.body_.size());
     response.headers_["Content-Length"] = content_length;
     response.headers_["Content-Type"] = mime_types::extension_to_type(extension);
-    BOOST_LOG_TRIVIAL(info) << "[StaticRequestHandler] [Response] Content-Length: " << content_length;
+    BOOST_LOG_TRIVIAL(info) << "[StaticRequestHandler] finish handling request";
+    BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << content_length;
     return response;
 }
 

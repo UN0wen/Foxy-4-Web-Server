@@ -1,6 +1,7 @@
 #include "not_found_request_handler.h"
 #include "response_generator.h"
 #include "data_collector.h"
+#include <boost/log/trivial.hpp>
 
 
 NotFoundRequestHandler::NotFoundRequestHandler()
@@ -15,6 +16,8 @@ RequestHandler *NotFoundRequestHandler::Init(const std::string &location_path, c
 }
 
 Response NotFoundRequestHandler::handle_request(const Request &request){
+    BOOST_LOG_TRIVIAL(info) << "[404RequestHandler] 404 request handler is handling request.";
     Response response = ResponseGenerator::stock_response(Response::not_found);
+    BOOST_LOG_TRIVIAL(info) << "[404RequestHandler] 404 request handler finish processing request";
     return response;
 }

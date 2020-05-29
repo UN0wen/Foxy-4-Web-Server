@@ -56,12 +56,15 @@ std::string EchoRequestHandler::convert_to_rawbody(Request request){
 
 Response EchoRequestHandler::handle_request(const Request &request)
 {
+  BOOST_LOG_TRIVIAL(info) << "[EchoRequestHandler] echo request handler is handling request.";
   Response response = Response();
   std::string body = convert_to_rawbody(request);
   response.body_ = body;
   response.code_ = Response::ok;
   response.headers_["Content-Length"] = std::to_string(response.body_.size());
-  response.headers_["Content-Type"] = "text/plain";  
+  response.headers_["Content-Type"] = "text/plain"; 
+  BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << std::to_string(response.body_.size());
+  BOOST_LOG_TRIVIAL(info) << "[EchoRequestHandler] finish processing request.";
   return response;
 }
 

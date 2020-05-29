@@ -56,10 +56,11 @@ add_library(request_parser src/request_parser.cc)
 target_link_libraries(request_parser utility)
 
 add_library(response_generator src/response_generator.cc)
+target_link_libraries(response_generator Boost::log)
 
 # Request Handlers
 add_library(echo_request_handler src/echo_request_handler.cc)
-target_link_libraries(echo_request_handler data_collector)
+target_link_libraries(echo_request_handler data_collector Boost::log)
 
 add_library(static_request_handler src/static_request_handler.cc)
 target_link_libraries(static_request_handler Boost::log mime_types config response_generator data_collector utility)
@@ -68,13 +69,13 @@ add_library(status_request_handler src/status_request_handler.cc)
 target_link_libraries(status_request_handler response_generator data_collector)
 
 add_library(not_found_request_handler src/not_found_request_handler.cc)
-target_link_libraries(not_found_request_handler response_generator data_collector)
+target_link_libraries(not_found_request_handler response_generator data_collector Boost::log)
 
 add_library(proxy_request_handler src/proxy_request_handler.cc)
 target_link_libraries(proxy_request_handler Boost::log config response_generator data_collector utility)
 
 add_library(health_request_handler src/health_request_handler.cc)
-target_link_libraries(health_request_handler response_generator data_collector)
+target_link_libraries(health_request_handler response_generator data_collector Boost::log)
 
 # Dispatcher
 

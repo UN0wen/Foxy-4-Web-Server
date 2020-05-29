@@ -121,6 +121,7 @@ Response ProxyRequestHandler::handle_request(const Request &client_request)
 {
     // Initialize Response object with default set to not_found
     Response return_response = Response();
+    BOOST_LOG_TRIVIAL(info) << "[ProxyRequestHandler] proxy request handler is handling request.";
     return_response.code_ = Response::not_found;
     return_response.body_ = "";
 
@@ -260,7 +261,8 @@ Response ProxyRequestHandler::handle_request(const Request &client_request)
     {
         BOOST_LOG_TRIVIAL(error) << "[ProxyRequestHandler] Exception: " << e.what();
     }
-
+    BOOST_LOG_TRIVIAL(info) << "[ProxyRequestHandler] proxy request handler finish handling request.";
+    BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << std::to_string(return_response.body_.size());
     return return_response;
 }
 

@@ -79,11 +79,15 @@ RequestHandler *StatusRequestHandler::Init(const std::string &location_path, con
 
 Response StatusRequestHandler::handle_request(const Request &request)
 {
+  BOOST_LOG_TRIVIAL(info) << "[StatusRequestHandler] status request handler is handling request.";
   Response response = Response();
   std::string body = status_response::create_body();
   response.code_ = Response::ok;
   response.body_ = body;
   response.headers_["Content-Length"] = std::to_string(response.body_.size());
   response.headers_["Content-Type"] = "text/html";
+  BOOST_LOG_TRIVIAL(info) << "[StatusRequestHandler] finish handling request.";
+  BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << std::to_string(response.body_.size());
+  
   return response;
 }

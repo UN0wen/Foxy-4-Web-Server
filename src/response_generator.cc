@@ -10,6 +10,7 @@
 
 #include "response_generator.h"
 #include <string>
+#include <boost/log/trivial.hpp>
 
 namespace status_string {
   const std::string ok =
@@ -257,6 +258,7 @@ Response ResponseGenerator::stock_response(Response::status_code status)
   
   rep.headers_["Content-Length"] = std::to_string(rep.body_.size());
   rep.headers_["Content-Type"] = "text/html";
+  BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << std::to_string(rep.body_.size());
   return rep;
 }
 
