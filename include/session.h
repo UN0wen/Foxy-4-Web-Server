@@ -8,6 +8,7 @@
 #include <map>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/asio/ssl.hpp>
 
 using boost::asio::ip::tcp;
 #include "response.h"
@@ -21,8 +22,9 @@ class Session
 {
 public:
 
-  Session(boost::asio::io_service& io_service, RequestHandlerGenerator generator);
-  tcp::socket& socket();
+  Session(boost::asio::io_service& io_service, boost::asio::ssl::context& context, RequestHandlerGenerator generator);
+  boost::asio::ssl::stream<tcp::socket>::lowest_layer_type& socket();
+
 
   void start();
 
@@ -34,15 +36,21 @@ private:
   void handle_final_read(const boost::system::error_code& error,
       size_t bytes_transferred);
 
+  void handle_handshake(const boost::system::error_code &error);
+
   void handle_write(const boost::system::error_code& error);
   Response process_request(bool status);
   void deep_copy_response(Response response);
   void handle_bad_request();
 
+  void close_socket();
+  
+  boost::asio::ssl::stream<tcp::socket> socket_;
+  
   RequestParser request_parser_;
   ResponseGenerator response_generator_;
   Request request_;
-  tcp::socket socket_;
+  
   enum { max_length = 1024 };
   char data_[max_length];
   char buffer_[max_length];

@@ -14,7 +14,7 @@ $SERVER_EXECUTABLE integration.conf &
 sleep 1
 
 #basic curl test
-if  curl -s localhost:8000/echo | \
+if  curl -k -s https://localhost:8000/echo | \
 	tr "\n\r" " "| \
 	grep "GET /echo HTTP/1.1" | \
 	grep "Host:" | \
@@ -28,7 +28,7 @@ else
 fi
 
 #curl post test
-if  curl -s -d val=0 localhost:8000/echo | \
+if  curl -k -s -d val=0 https://localhost:8000/echo | \
 	tr "\n\r" " "| \
 	grep "POST /echo HTTP/1.1" | \
 	grep "Host:" | \
@@ -46,7 +46,7 @@ fi
 
 # basic bad command test
 if 	echo "test" | \
-	nc -w 1 localhost 8000 | \
+	ncat --ssl -w 1 localhost 8000 | \
 	tr "\n\r" " "| \
 	grep "HTTP/1.1 400 Bad Request" | \
 	grep "Content-Length: 89" | \
@@ -62,12 +62,12 @@ fi
 #multithread test
 
 #connection that stays open
-printf "GET / HTTP/1.1\r\n" | nc localhost 8000&
+printf "GET / HTTP/1.1\r\n" | ncat --ssl localhost 8000&
 
 sleep 0.5
 
 #repeat basic curl test, should stall if no multithread
-if  timeout 1 curl -s localhost:8000/echo | \
+if  timeout 1 curl -k -s https://localhost:8000/echo | \
 	tr "\n\r" " "| \
 	grep "GET /echo HTTP/1.1" | \
 	grep "Host:" | \

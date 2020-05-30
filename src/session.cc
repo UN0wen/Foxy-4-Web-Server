@@ -13,25 +13,39 @@
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
 
-Session::Session(boost::asio::io_service &io_service, RequestHandlerGenerator generator)
-    : socket_(io_service),
+Session::Session(boost::asio::io_service &io_service, boost::asio::ssl::context &context, RequestHandlerGenerator generator)
+    : socket_(io_service, context),
       generator_(generator)
 {
   data_collector_ = DataCollector::get_instance();
 }
 
-tcp::socket &Session::socket()
+boost::asio::ssl::stream<tcp::socket>::lowest_layer_type &Session::socket()
 {
-  return socket_;
+  return socket_.lowest_layer();
 }
 
 void Session::start()
 {
+  socket_.async_handshake(boost::asio::ssl::stream_base::server,
+                          boost::bind(&Session::handle_handshake, this,
+                                      boost::asio::placeholders::error));
+}
 
-  socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                          boost::bind(&Session::handle_read, this,
-                                      boost::asio::placeholders::error,
-                                      boost::asio::placeholders::bytes_transferred));
+void Session::handle_handshake(const boost::system::error_code &error)
+{
+  if (!error)
+  {
+    socket_.async_read_some(boost::asio::buffer(data_, max_length),
+                            boost::bind(&Session::handle_read, this,
+                                        boost::asio::placeholders::error,
+                                        boost::asio::placeholders::bytes_transferred));
+  }
+  else
+  {
+    BOOST_LOG_TRIVIAL(error) << "[Session] SSL Handshake failed. " << error.message();
+    delete this;
+  }
 }
 
 void Session::deep_copy_response(Response response)
@@ -164,7 +178,7 @@ void Session::handle_write(const boost::system::error_code &error)
     if (request_.headers_["Connection"] == "close" || request_.headers_["connection"] == "close")
     {
       BOOST_LOG_TRIVIAL(info) << "[Session] Closed session with IP " << remote_ip;
-      socket_.close();
+      close_socket();
       delete this;
     }
     else
@@ -178,7 +192,16 @@ void Session::handle_write(const boost::system::error_code &error)
   else
   {
     BOOST_LOG_TRIVIAL(info) << "[Session] Closed session with IP " << remote_ip;
-    socket_.close();
+    close_socket();
     delete this;
   }
+}
+
+void Session::close_socket()
+{
+  boost::system::error_code ec;
+  socket_.lowest_layer().cancel(ec);
+  socket_.async_shutdown([&](...) {
+    socket_.lowest_layer().close();
+  });
 }

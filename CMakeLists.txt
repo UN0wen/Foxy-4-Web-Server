@@ -34,6 +34,13 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 include_directories(include)
 
+find_package(OpenSSL REQUIRED)
+message(STATUS "OpenSSL_VERSION: ${OPENSSL_VERSION}")
+message(STATUS "OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "OpenSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+
 # Enable Bash 
 # found at https://stackoverflow.com/questions/25627336/integrate-bash-test-scripts-in-cmake
 find_program(BASH_PROGRAM bash)
@@ -100,6 +107,7 @@ target_link_libraries(session
     request_parser 
     request_handler_generator 
     Boost::log
+    ${OPENSSL_LIBRARIES}
 )
 
 add_library(server_lib src/server.cc)

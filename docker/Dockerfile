@@ -9,7 +9,7 @@ WORKDIR /usr/src/project/build
 
 # Build and test
 RUN cmake ..
-RUN make
+RUN make -j
 RUN ctest --output-on_failure
 
 
@@ -23,6 +23,9 @@ COPY --from=builder /usr/src/project/config-docker/nginx.conf .
 
 # Copies data from data folder to current dir
 COPY --from=builder /usr/src/project/data ./data
+
+# Copies certs to current dir
+COPY --from=builder /usr/src/project/certs ./certs
 
 # TODO(drzheng): Expose some port(s)
 EXPOSE 8000
