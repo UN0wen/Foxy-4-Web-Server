@@ -123,6 +123,10 @@ add_executable(static_request_handler_test tests/static_request_handler/static_r
 target_link_libraries(static_request_handler_test static_request_handler gtest_main)
 gtest_discover_tests(static_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/static_request_handler)
 
+add_executable(status_request_handler_test tests/status_request_handler/status_request_handler_test.cc)
+target_link_libraries(status_request_handler_test status_request_handler gtest_main)
+gtest_discover_tests(status_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/status_request_handler)
+
 add_executable(request_parser_test tests/request_parser/request_parser_test.cc)
 target_link_libraries(request_parser_test request_parser gtest_main)
 gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
@@ -146,6 +150,10 @@ gtest_discover_tests(proxy_request_handler_test WORKING_DIRECTORY ${CMAKE_CURREN
 add_executable(health_request_handler_test tests/health_request_handler/health_request_handler_test.cc)
 target_link_libraries(health_request_handler_test health_request_handler gtest_main)
 gtest_discover_tests(health_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/health_request_handler)
+
+add_executable(data_collector_test tests/data_collector/data_collector_test.cc)
+target_link_libraries(data_collector_test data_collector gtest_main)
+gtest_discover_tests(data_collector_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/data_collector)
 
 add_test(NAME integration_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
 
@@ -179,9 +187,11 @@ generate_coverage_report(
         request_handler_generator_test 
         request_parser_test
         response_generator_test 
-        static_request_handler_test 
+        static_request_handler_test
+	status_request_handler_test
         echo_request_handler_test 
         not_found_request_handler_test 
         proxy_request_handler_test
         health_request_handler_test
+	data_collector_test
 )

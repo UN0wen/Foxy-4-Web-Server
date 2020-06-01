@@ -1,0 +1,15 @@
+#include "gtest/gtest.h"
+#include <fstream>
+#include "data_collector.h"
+
+class DataCollectorTest : public ::testing::Test
+{
+protected: 
+  bool test = false;
+};
+
+TEST_F(DataCollectorTest, first)
+{
+  bool first = true;
+  EXPECT_TRUE(first);
+}
