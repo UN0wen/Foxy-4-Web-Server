@@ -16,16 +16,17 @@ Server::Server(boost::asio::io_service &io_service, short port, RequestHandlerGe
     setup_ssl();
     start_accept();
 
-    std::vector<boost::shared_ptr<boost::thread>> threads;
-
     for (int i = 0; i < num_threads_; i++)
     {
         boost::shared_ptr<boost::thread> thread(new boost::thread(
             boost::bind(&boost::asio::io_service::run, &io_service_)));
-        threads.push_back(thread);
+        threads_.push_back(thread);
     }
+}
 
-    for (auto thread : threads)
+Server::~Server()
+{
+    for (auto thread : threads_)
     {
         thread->join();
     }

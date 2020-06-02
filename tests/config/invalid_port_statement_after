@@ -1,3 +1,3 @@
 server {
-  listen 8000 port;
+  listen https 8000 port;
 }

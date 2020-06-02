@@ -29,8 +29,9 @@ class NginxConfig {
  public:
   std::string ToString(int depth = 0);
   //gets the port number specified in nginx file
-  bool get_port(int* port);
+  bool get_port(std::vector<std::pair<int, std::string>>& vec);
   bool get_threads(int* threads);
+  bool get_hostname(std::string* hostname);
   bool get_dir(std::string* dir);
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
   

@@ -31,6 +31,7 @@
 #include <map>
 
 #include "server.h"
+#include "http_server.h"
 #include "config_parser.h"
 namespace expr = boost::log::expressions;
 namespace logging = boost::log;
@@ -52,7 +53,7 @@ void init_logging()
   logging::settings log_settings;
 
   log_settings["Core"]["DisableLogging"] = false;
-  
+
   // Console
   log_settings["Sinks.Console"]["Destination"] = "Console";
   log_settings["Sinks.Console"]["AutoFlush"] = true;
@@ -67,11 +68,11 @@ void init_logging()
   // Extended ISO format: Year-month-day time-timezone
   log_settings["Sinks.File"]["FileName"] = "%Y-%m-%d %H:%M:%S%F%Q.log";
 
-  logging::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
-  logging::register_simple_formatter_factory< boost::thread::id, char >("ThreadID");
+  logging::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
+  logging::register_simple_formatter_factory<boost::thread::id, char>("ThreadID");
   BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
   logging::init_from_settings(log_settings);
-  src::logger_mt& lg = my_logger::get();
+  src::logger_mt &lg = my_logger::get();
 }
 
 int main(int argc, char *argv[])
@@ -94,26 +95,43 @@ int main(int argc, char *argv[])
     int port;
     int threads = 4; //default number of threads
     std::string dir = "";
+    std::string hostname = "";
     std::map<std::string, std::shared_ptr<RequestHandler>> mapping;
+    std::vector<std::pair<int, std::string>> port_types;
 
     bool parse_success = config_parser.Parse(argv[1], &config);
-    bool get_port = config.get_port(&port);
+    bool get_port = config.get_port(port_types);
     bool get_dir = config.get_dir(&dir);
     bool get_threads = config.get_threads(&threads);
+    bool get_hostname = config.get_hostname(&hostname);
 
     RequestHandlerGenerator generator;
     bool get_map = generator.get_map(&config);
-    if (parse_success && get_port && get_map && get_dir)
+    if (parse_success && get_port && get_map && get_dir && get_hostname)
     {
-      if(!dir.empty())
+      if (!dir.empty())
       {
         chdir(dir.c_str());
       }
       BOOST_LOG_TRIVIAL(info) << "[Server] Config was parsed successfully";
-      BOOST_LOG_TRIVIAL(info) << "[Server] Starting server now at port " << port;
       boost::asio::io_service io_service;
+      std::vector<std::shared_ptr<Server>> servers;
+      std::vector<std::shared_ptr<HttpServer>> http_servers;
 
-      Server s(io_service, port, generator, threads);
+      for (auto &port_type : port_types)
+      {
+        if (port_type.second == "https")
+        {
+          servers.push_back(std::shared_ptr<Server>(new Server(io_service, port_type.first, generator, threads)));
+        }
+        else if (port_type.second == "http")
+        {
+          std::string hostname_fixed = hostname;
+          hostname_fixed.pop_back();
+          http_servers.push_back(std::shared_ptr<HttpServer>(new HttpServer(io_service, port_type.first, threads, hostname_fixed)));
+        }
+      }
+
       io_service.run();
     }
     else

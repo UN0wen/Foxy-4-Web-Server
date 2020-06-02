@@ -22,9 +22,8 @@ class Session
 {
 public:
 
-  Session(boost::asio::io_service& io_service, boost::asio::ssl::context& context, RequestHandlerGenerator generator);
+  Session(boost::asio::io_service& io_service, boost::asio::ssl::context& context, RequestHandlerGenerator& generator);
   boost::asio::ssl::stream<tcp::socket>::lowest_layer_type& socket();
-
 
   void start();
 

@@ -13,7 +13,7 @@
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
 
-Session::Session(boost::asio::io_service &io_service, boost::asio::ssl::context &context, RequestHandlerGenerator generator)
+Session::Session(boost::asio::io_service &io_service, boost::asio::ssl::context &context, RequestHandlerGenerator& generator)
     : socket_(io_service, context),
       generator_(generator)
 {

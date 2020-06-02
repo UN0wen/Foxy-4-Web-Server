@@ -16,11 +16,10 @@
 bool NginxConfig::valid_keyword_listen(std::vector<std::string>::iterator find,
                                        const std::shared_ptr<NginxConfigStatement> &statement)
 {
-    if (find != statement->tokens_.end() &&
-        find != std::prev(statement->tokens_.end()) &&
-        statement->tokens_.size() == 2)
-        return true;
-    return false;
+  if (find != statement->tokens_.end() &&
+      find != std::prev(statement->tokens_.end()))
+    return true;
+  return false;
 }
 
 std::string NginxConfig::ToString(int depth)
@@ -36,34 +35,41 @@ std::string NginxConfig::ToString(int depth)
 /*get_port() function:
   Currently returns the first port number found in the first server
   block and assumes correct format was given from NginxConfig.Parse().*/
-bool NginxConfig::get_port(int *port)
+bool NginxConfig::get_port(std::vector<std::pair<int, std::string>> &vec)
 {
+  int port;
+  std::string type;
   for (const auto &statement : statements_)
   {
     std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
                                                         statement->tokens_.end(),
                                                         "listen");
 
-    if (valid_keyword_listen(find, statement))
+    if (valid_keyword_listen(find, statement) && statement->tokens_.size() == 3)
     {
       //if all the listen keyword is found, the port number is the token after "listen"
-      std::string portstring = *(find + 1);
+      std::string portstring = *(find + 2);
       if (portstring.find_first_not_of("0123456789") == std::string::npos)
       {
-        *port = std::stoi(portstring);
-        return true;
+        port = std::stoi(portstring);
+        type = *(find + 1);
+        if (type != "https" && type != "http")
+          return false;
+        vec.push_back(std::pair<int, std::string>(port, type));
+        continue;
       }
       else
-      { 
+      {
         return false;
       }
     }
+
     if (statement->child_block_.get() != nullptr)
     {
-      return statement->child_block_->get_port(port);
+      statement->child_block_->get_port(vec);
     };
   }
-  return false;
+  return !vec.empty();
 }
 
 bool NginxConfig::get_threads(int *threads)
@@ -83,7 +89,7 @@ bool NginxConfig::get_threads(int *threads)
         return true;
       }
       else
-      { 
+      {
         return false;
       }
     }
@@ -95,7 +101,7 @@ bool NginxConfig::get_threads(int *threads)
   return false;
 }
 
-bool NginxConfig::get_dir(std::string* dir)
+bool NginxConfig::get_dir(std::string *dir)
 {
   for (const auto &statement : statements_)
   {
@@ -106,7 +112,26 @@ bool NginxConfig::get_dir(std::string* dir)
     if (valid_keyword_listen(find, statement))
     {
       *dir = *(find + 1);
-      if(!utility::is_quoted(dir))
+      if (!utility::is_quoted(dir))
+        return false;
+      return true;
+    }
+  }
+  return true;
+}
+
+bool NginxConfig::get_hostname(std::string *hostname)
+{
+  for (const auto &statement : statements_)
+  {
+    std::vector<std::string>::iterator find = std::find(statement->tokens_.begin(),
+                                                        statement->tokens_.end(),
+                                                        "hostname");
+
+    if (valid_keyword_listen(find, statement))
+    {
+      *hostname = *(find + 1);
+      if (!utility::is_quoted(hostname))
         return false;
       return true;
     }

@@ -113,8 +113,23 @@ target_link_libraries(session
 )
 
 add_library(server_lib src/server.cc)
+target_link_libraries(server_lib session)
+
+add_library(http_session src/http_session.cc)
+target_link_libraries(http_session
+    response_generator  
+    utility 
+    data_collector 
+    Boost::system 
+    request_parser 
+    Boost::log
+)
+
+add_library(http_server_lib src/http_server.cc)
+target_link_libraries(http_server_lib http_session)
+
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib session Boost::log_setup config_parser)
+target_link_libraries(server server_lib http_server_lib Boost::log_setup config_parser)
 
 # Tests
 add_executable(config_test tests/config/config_test.cc)
@@ -203,5 +218,5 @@ generate_coverage_report(
         not_found_request_handler_test 
         proxy_request_handler_test
         health_request_handler_test
-	data_collector_test
+	    data_collector_test
 )

@@ -8,28 +8,25 @@
 
 
 using boost::asio::ip::tcp;
-#include "session.h"
+#include "http_session.h"
 #include <map>
 
-class Server
+class HttpServer
 {
 
 public:
-    Server(boost::asio::io_service &io_service, short port, RequestHandlerGenerator generator, int num_threads);
-    ~Server();
-
+    HttpServer(boost::asio::io_service &io_service, short port, int num_threads, std::string hostname);
+    ~HttpServer();
 private:
     void start_accept();
     
-    void handle_accept(Session *new_session,
+    void handle_accept(HttpSession *new_session,
                        const boost::system::error_code &error);
 
-    void setup_ssl();
     boost::asio::io_service &io_service_;
     tcp::acceptor acceptor_;
-    RequestHandlerGenerator generator_;
     int num_threads_;
-    boost::asio::ssl::context context_;
+    std::string hostname_;
 
     std::vector<boost::shared_ptr<boost::thread>> threads_;
 };
