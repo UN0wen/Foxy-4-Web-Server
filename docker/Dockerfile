@@ -24,8 +24,8 @@ COPY --from=builder /usr/src/project/config-docker/nginx.conf .
 # Copies data from data folder to current dir
 COPY --from=builder /usr/src/project/data ./data
 
-# Copies certs to current dir
-COPY --from=builder /usr/src/project/certs ./certs
+# Copies certs to certs dir
+COPY --from=builder /usr/src/project/certs /usr/src/project/certs
 
 # TODO(drzheng): Expose some port(s)
 EXPOSE 8000

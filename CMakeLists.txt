@@ -34,6 +34,7 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 include_directories(include)
 
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 message(STATUS "OpenSSL_VERSION: ${OPENSSL_VERSION}")
 message(STATUS "OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
@@ -108,6 +109,7 @@ target_link_libraries(session
     request_handler_generator 
     Boost::log
     ${OPENSSL_LIBRARIES}
+    ${CMAKE_DL_LIBS}
 )
 
 add_library(server_lib src/server.cc)
