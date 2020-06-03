@@ -41,6 +41,7 @@ message(STATUS "OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "OpenSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 include_directories(${OPENSSL_INCLUDE_DIR})
 
+message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
 # Enable Bash 
 # found at https://stackoverflow.com/questions/25627336/integrate-bash-test-scripts-in-cmake
@@ -56,8 +57,12 @@ target_link_libraries(config_parser config)
 # Utilities
 add_library(mime_types src/mime_types.cc)
 add_library(utility src/utility.cc)
+
 add_library(data_collector src/data_collector.cc)
 target_link_libraries(data_collector Boost::system)
+
+add_library(password src/password.cc)
+target_link_libraries(password ${CMAKE_SOURCE_DIR}/external_libs/libbcrypt.a)
 
 # Request and Response
 add_library(request_parser src/request_parser.cc)
@@ -132,6 +137,8 @@ add_executable(server src/server_main.cc)
 target_link_libraries(server server_lib http_server_lib Boost::log_setup config_parser)
 
 # Tests
+
+# Configs
 add_executable(config_test tests/config/config_test.cc)
 target_link_libraries(config_test config_parser gtest_main)
 gtest_discover_tests(config_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config)
@@ -140,6 +147,7 @@ add_executable(config_parser_test tests/config_parser/config_parser_test.cc)
 target_link_libraries(config_parser_test config_parser gtest_main)
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/config_parser)
 
+# Request Handlers
 add_executable(echo_request_handler_test tests/echo_request_handler/echo_request_handler_test.cc)
 target_link_libraries(echo_request_handler_test echo_request_handler gtest_main)
 gtest_discover_tests(echo_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/echo_request_handler)
@@ -152,21 +160,9 @@ add_executable(status_request_handler_test tests/status_request_handler/status_r
 target_link_libraries(status_request_handler_test status_request_handler gtest_main)
 gtest_discover_tests(status_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/status_request_handler)
 
-add_executable(request_parser_test tests/request_parser/request_parser_test.cc)
-target_link_libraries(request_parser_test request_parser gtest_main)
-gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
-
 add_executable(not_found_request_handler_test tests/not_found_request_handler/not_found_request_handler_test.cc)
 target_link_libraries(not_found_request_handler_test not_found_request_handler gtest_main)
 gtest_discover_tests(not_found_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/not_found_request_handler)
-
-add_executable(response_generator_test tests/response_generator/response_generator_test.cc)
-target_link_libraries(response_generator_test response_generator gtest_main Boost::system)
-gtest_discover_tests(response_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/response_generator)
-
-add_executable(request_handler_generator_test tests/request_handler_generator/request_handler_generator_test.cc)
-target_link_libraries(request_handler_generator_test request_handler_generator gtest_main config_parser )
-gtest_discover_tests(request_handler_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler_generator)
 
 add_executable(proxy_request_handler_test tests/proxy_request_handler/proxy_request_handler_test.cc)
 target_link_libraries(proxy_request_handler_test proxy_request_handler gtest_main config_parser)
@@ -176,9 +172,27 @@ add_executable(health_request_handler_test tests/health_request_handler/health_r
 target_link_libraries(health_request_handler_test health_request_handler gtest_main)
 gtest_discover_tests(health_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/health_request_handler)
 
+# Generators and Parsers
+add_executable(request_parser_test tests/request_parser/request_parser_test.cc)
+target_link_libraries(request_parser_test request_parser gtest_main)
+gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_parser)
+
+add_executable(response_generator_test tests/response_generator/response_generator_test.cc)
+target_link_libraries(response_generator_test response_generator gtest_main Boost::system)
+gtest_discover_tests(response_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/response_generator)
+
+add_executable(request_handler_generator_test tests/request_handler_generator/request_handler_generator_test.cc)
+target_link_libraries(request_handler_generator_test request_handler_generator gtest_main config_parser )
+gtest_discover_tests(request_handler_generator_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/request_handler_generator)
+
+# Misc tests
 add_executable(data_collector_test tests/data_collector/data_collector_test.cc)
 target_link_libraries(data_collector_test data_collector gtest_main)
 gtest_discover_tests(data_collector_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/data_collector)
+
+add_executable(password_test tests/password/password_test.cc)
+target_link_libraries(password_test password gtest_main)
+gtest_discover_tests(password_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/password)
 
 add_test(NAME integration_test COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/integration.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server)
 
@@ -191,7 +205,8 @@ generate_coverage_report(
         config 
         config_parser 
         config_statement 
-        utility 
+        utility
+        password 
         response_generator
         data_collector
         mime_types 
@@ -213,10 +228,11 @@ generate_coverage_report(
         request_parser_test
         response_generator_test 
         static_request_handler_test
-	status_request_handler_test
+	    status_request_handler_test
         echo_request_handler_test 
         not_found_request_handler_test 
         proxy_request_handler_test
         health_request_handler_test
-	    data_collector_test
+        data_collector_test
+        password_test
 )
