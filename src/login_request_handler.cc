@@ -37,42 +37,22 @@ RequestHandler *LoginRequestHandler::Init(const std::string &location_path, cons
     return login_request_handler;
 }
 
-std::string LoginRequestHandler::get_extension(const std::string &request_path)
-{
-    // Determine the file extension.
-    std::string extension = "";
-    std::size_t last_slash_pos = request_path.find_last_of("/");
-    std::size_t last_dot_pos = request_path.find_last_of(".");
-
-    if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
-    {
-        extension = request_path.substr(last_dot_pos + 1);
-    }
-
-    return extension;
-}
-
 Response LoginRequestHandler::perpare_html_response(const std::string file)
 {
-    //(JOSH): the reason that I am pasting the whole html here is because my browser does not even work with static request handler, which always return 404
-    std::string login_form = "<!DOCTYPE html><html><h2>Foxy-4 Login Page</h2><form method=\"POST\">  <label for=\"fname\">User Name:</label><br>  <input type=\"text\" id=\"fname\" name=\"fname\"><br>  <label for=\"lname\">Password:</label><br>  <input type=\"text\" id=\"lname\" name=\"lname\"><br><br>  <input type=\"submit\" value=\"Submit\"></form> </html>";
-    std::string login_success ="<!DOCTYPE html><html><body> <h2> Login Successfully </h2></body></html>   ";
     Response response = Response();
     std::string request_path;
     request_path = root_ + file;
-    std::string full_path = get_extension(request_path);
-    BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] preparing full path: " + full_path;
-    std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-    // if (!is)
-    // {
-    //     response = ResponseGenerator::stock_response(Response::not_found);
-    //     return response;
-    // }
+    BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] preparing full path: " + request_path;
+    std::ifstream is(request_path.c_str(), std::ios::in | std::ios::binary);
+    if (!is)
+    {
+        response = ResponseGenerator::stock_response(Response::not_found);
+        return response;
+    }
     response.code_ = Response::ok;
     char buf[512];
-    // while (is.read(buf, sizeof(buf)).gcount() > 0)
-    //     response.body_.append(buf, is.gcount());
-    response.body_ = file=="index.html" ? login_form : login_success; 
+    while (is.read(buf, sizeof(buf)).gcount() > 0)
+        response.body_.append(buf, is.gcount());
     std::string content_length = std::to_string(response.body_.size());
     response.headers_["Content-Length"] = content_length;
     response.headers_["Content-Type"] = "text/html";
