@@ -6,6 +6,7 @@
 #include "not_found_request_handler.h"
 #include "proxy_request_handler.h"
 #include "health_request_handler.h"
+#include "login_request_handler.h"
 #include "utility.h"
 
 RequestHandlerGenerator::RequestHandlerGenerator() {}
@@ -129,6 +130,10 @@ RequestHandler *RequestHandlerGenerator::createHandler(std::string path, std::st
 	else if (method == "HealthHandler")
 	{
 		return HealthRequestHandler::Init(path, config);
+	}
+	else if(method == "LoginHandler")
+	{
+		return LoginRequestHandler::Init(path, config);
 	}
 	else
 	{

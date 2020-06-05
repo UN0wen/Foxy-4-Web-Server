@@ -90,6 +90,8 @@ target_link_libraries(proxy_request_handler Boost::log config response_generator
 add_library(health_request_handler src/health_request_handler.cc)
 target_link_libraries(health_request_handler response_generator data_collector Boost::log)
 
+add_library(login_request_handler src/login_request_handler.cc)
+target_link_libraries(login_request_handler response_generator data_collector config  utility)
 # Dispatcher
 
 add_library(request_handler_generator src/request_handler_generator.cc)
@@ -100,6 +102,7 @@ target_link_libraries(request_handler_generator
     status_request_handler
     static_request_handler
     health_request_handler
+    login_request_handler
 )
 
 # Server and Session
