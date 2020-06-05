@@ -33,6 +33,8 @@
 #include "server.h"
 #include "http_server.h"
 #include "config_parser.h"
+#include "database.h"
+
 namespace expr = boost::log::expressions;
 namespace logging = boost::log;
 namespace src = boost::log::sources;
@@ -105,6 +107,17 @@ int main(int argc, char *argv[])
     bool get_threads = config.get_threads(&threads);
     bool get_hostname = config.get_hostname(&hostname);
 
+    //testing, to be removed upon merge
+    std::string pass;
+    db_create();
+    db_insert("foxy-4", "thisisapassword");
+    pass = db_select_pass("foxy-4");
+    std::cout<<pass<<std::endl;
+    pass = db_select_pass("invalid");
+    if(pass == "")
+      std::cout<<"yes"<<std::endl;
+
+ 
     RequestHandlerGenerator generator;
     bool get_map = generator.get_map(&config);
     if (parse_success && get_port && get_map && get_dir && get_hostname)

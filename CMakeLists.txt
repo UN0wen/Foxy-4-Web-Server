@@ -47,6 +47,13 @@ message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 # found at https://stackoverflow.com/questions/25627336/integrate-bash-test-scripts-in-cmake
 find_program(BASH_PROGRAM bash)
 
+# SQLite 
+
+add_library(database include/database.h)
+set_target_properties(database PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(database ${CMAKE_SOURCE_DIR}/external_libs/sqlite3.a)
+
+
 # Config
 add_library(config_statement src/config_statement.cc)
 add_library(config src/config.cc)
@@ -137,7 +144,7 @@ add_library(http_server_lib src/http_server.cc)
 target_link_libraries(http_server_lib http_session)
 
 add_executable(server src/server_main.cc)
-target_link_libraries(server server_lib http_server_lib Boost::log_setup config_parser)
+target_link_libraries(server server_lib http_server_lib Boost::log_setup config_parser database)
 
 # Tests
 
