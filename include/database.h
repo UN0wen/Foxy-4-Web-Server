@@ -1,97 +1,15 @@
-//various functions for sqlite
+#pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <string>
-#include <sqlite/sqlite3.h>
-#include <iostream>
-
-static int callback_select(void *pointer, int argc, char **argv, char **azColName) {
-    int i;
-    std::string *s = (std::string *)pointer;
-    *s = argv[0];
-    return 0;
-}
-
-void db_create()
+//various functions for sqlite
+namespace database
 {
-    sqlite3 *db;
-    int rc;
-    char *zErrMsg = 0;
-    const char *sql;
+    static int callback_select(void *pointer, int argc, char **argv, char **azColName);
 
-    sqlite3_open("auth.db", &db);
+    void db_create();
 
-    sql = "CREATE TABLE AUTH("  \
-    "USER TEXT NOT NULL," \
-    "PASS TEXT NOT NULL,"
-    "PRIMARY KEY (USER));";
+    void db_insert(std::string user, std::string pass);
 
-    rc = sqlite3_exec(db, sql, 0, 0, &zErrMsg);
-
-    if( rc != SQLITE_OK ){
-      	fprintf(stderr, "SQL msg: %s\n", zErrMsg);
-      	sqlite3_free(zErrMsg);
-    }
-    sqlite3_close(db);
-}
-
-void db_insert(std::string user, std::string pass){
-	sqlite3 *db;
-    int rc;
-    std::string sql;
-    sqlite3_stmt *query;
-
-    sqlite3_open("auth.db", &db);
-
-    sql = "INSERT INTO AUTH(user,pass) "  \
-    "VALUES (?1, ?2);";   
-
-	rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &query, NULL);    
-    sqlite3_bind_text(query, 1, user.c_str(), user.size(), NULL);
-    sqlite3_bind_text(query, 2, pass.c_str(), pass.size(), NULL);
-
-    if( rc != SQLITE_OK ){
-      	printf("SQL msg: %s\n", sqlite3_errmsg(db));
-      	return;
-    }
-    rc = sqlite3_step(query);
-    if (rc != SQLITE_DONE){
-	    printf("SQL msg: %s\n", sqlite3_errmsg(db));
-	}
-	sqlite3_finalize(query);
-    sqlite3_close(db);
-}
-
-std::string db_select_pass(std::string user){
-    sqlite3 *db;
-    int rc;
-    char *zErrMsg = 0;
-    std::string sql;
-    sqlite3_stmt *query;
-    std::string data;
-
-    sqlite3_open("auth.db", &db);
-
-    sql = "SELECT pass from AUTH WHERE user=?1";
-    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &query, NULL);
-    sqlite3_bind_text(query, 1, user.c_str(), user.size(), NULL);
-
-    if( rc != SQLITE_OK ){
-      	printf("SQL SELECT msg: %s\n", sqlite3_errmsg(db));
-      	return "";
-    }
-
-    rc = sqlite3_step(query);
-    while(rc == SQLITE_ROW){
-    	data = (const char *)sqlite3_column_text(query, 0);
-    	rc = sqlite3_step(query);
-    }
-    if (rc != SQLITE_DONE){
-	    printf("SQL msg: %s\n", sqlite3_errmsg(db));
-	}
-	sqlite3_finalize(query);
-    sqlite3_close(db);
-
-    return data;
-}
+    std::string db_select_pass(std::string user);
+} // namespace database

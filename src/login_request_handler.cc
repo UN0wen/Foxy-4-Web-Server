@@ -6,6 +6,8 @@
 #include <string>
 #include "data_collector.h"
 #include "utility.h"
+#include "password.h"
+#include "database.h"
 #include <regex>
 #include <iterator>
 
@@ -66,6 +68,12 @@ std::set<std::string> LoginRequestHandler::extract_username(const std::string te
              std::sregex_token_iterator{} } ;
 }
 
+bool LoginRequestHandler::compare_password(std::string username, std::string password)
+{
+    std::string hashed_password = database::db_select_pass(username);
+    return Password::check_password(password, hashed_password);
+}
+
 std::string LoginRequestHandler::extract_password(const std::string text, int username_length){
     
     return text.substr(username_length+13);
@@ -73,31 +81,29 @@ std::string LoginRequestHandler::extract_password(const std::string text, int us
 
 Response LoginRequestHandler::handle_request(const Request &request)
 {
-
     //first, check what is the request to see whether it is a GET or POST
     //second, replace the path with root and then add index.html if it is GET request
     //third, if it is a GET request, return the html. Othewise, perform a SQL query.
-     BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] currently handling request";
+     BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Currently handling request";
     Response response = Response();
     if (request.method_ == Request::MethodEnum::GET)
     {
-        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] handing GET request";
+        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling GET request";
         response = perpare_html_response("index.html");
     }
     else if (request.method_ == Request::MethodEnum::POST)
     {
-        //TODO(DUY): Need to perform a password hashing
-        //TODO(DAVID): Need to perform a SQL query
-        //TODO(JOSH): check what is returning back to the server
-        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] handing POST request";
-        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] body : " + request.body_;
+        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling POST request";
+        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Request body: " + request.body_;
         std::string username = *extract_username(request.body_).begin();
         std::string password = extract_password(request.body_, username.length());
-        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] username : " + username;
-        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] password : " + password;
-        bool is_valid_password = true;
+        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Username: " + username;
+        BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Password: " + password;
+
+        bool is_valid_password = compare_password(username, password);
         if (is_valid_password)
-        {
+        {   
+            // Add the cookie here
             response = perpare_html_response("login_success.html");
         }
         else

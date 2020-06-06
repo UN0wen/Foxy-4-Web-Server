@@ -47,13 +47,6 @@ message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 # found at https://stackoverflow.com/questions/25627336/integrate-bash-test-scripts-in-cmake
 find_program(BASH_PROGRAM bash)
 
-# SQLite 
-
-add_library(database include/database.h)
-set_target_properties(database PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(database ${CMAKE_SOURCE_DIR}/external_libs/sqlite3.a)
-
-
 # Config
 add_library(config_statement src/config_statement.cc)
 add_library(config src/config.cc)
@@ -70,6 +63,12 @@ target_link_libraries(data_collector Boost::system)
 
 add_library(password src/password.cc)
 target_link_libraries(password ${CMAKE_SOURCE_DIR}/external_libs/libbcrypt.a)
+
+# SQLite 
+
+add_library(database src/database.cc)
+set_target_properties(database PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(database password ${CMAKE_SOURCE_DIR}/external_libs/sqlite3.a ${CMAKE_DL_LIBS} Boost::log)
 
 # Request and Response
 add_library(request_parser src/request_parser.cc)
@@ -98,7 +97,7 @@ add_library(health_request_handler src/health_request_handler.cc)
 target_link_libraries(health_request_handler response_generator data_collector Boost::log)
 
 add_library(login_request_handler src/login_request_handler.cc)
-target_link_libraries(login_request_handler response_generator data_collector config  utility)
+target_link_libraries(login_request_handler response_generator data_collector config  utility password database)
 # Dispatcher
 
 add_library(request_handler_generator src/request_handler_generator.cc)

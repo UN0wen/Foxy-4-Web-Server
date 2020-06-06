@@ -19,15 +19,18 @@
         </div>
         <div class="text-center">
             <form class="form-signin" method="POST">
+                <div class="alert alert-danger" role="alert">
+                    Wrong username or password. Please try again.
+                </div>
                 <div class="form-group">
                     <label for="username" class="sr-only">Username</label>
-                    <input type="text" name="fname" class="form-control" placeholder="Username" id="fname"
-                        required autofocus>
+                    <input type="text" name="fname" class="form-control" placeholder="Username" id="fname" required
+                        autofocus>
                 </div>
                 <div class="form-group">
                     <label for="password" class="sr-only">Password</label>
                     <input type="password" name="lname" class="form-control" id="lname" placeholder="Password"
-                         required>
+                     required>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Submit</button>

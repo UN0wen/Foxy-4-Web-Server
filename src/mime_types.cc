@@ -21,6 +21,7 @@ struct mapping
     {
         {"gif", "image/gif"},
         {"htm", "text/html"},
+        {"css", "text/css"},
         {"html", "text/html"},
         {"jpg", "image/jpeg"},
         {"jpeg", "image/jpeg"},

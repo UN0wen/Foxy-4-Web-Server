@@ -106,17 +106,6 @@ int main(int argc, char *argv[])
     bool get_dir = config.get_dir(&dir);
     bool get_threads = config.get_threads(&threads);
     bool get_hostname = config.get_hostname(&hostname);
-
-    //testing, to be removed upon merge
-    std::string pass;
-    db_create();
-    db_insert("foxy-4", "thisisapassword");
-    pass = db_select_pass("foxy-4");
-    std::cout<<pass<<std::endl;
-    pass = db_select_pass("invalid");
-    if(pass == "")
-      std::cout<<"yes"<<std::endl;
-
  
     RequestHandlerGenerator generator;
     bool get_map = generator.get_map(&config);
@@ -131,17 +120,27 @@ int main(int argc, char *argv[])
       std::vector<std::shared_ptr<Server>> servers;
       std::vector<std::shared_ptr<HttpServer>> http_servers;
 
+      database::db_create();
+      BOOST_LOG_TRIVIAL(info) << "[Server] Database created.";
+
+      // Mock data
+      // TODO: remove this when we have login request handler
+      database::db_insert("admin", "admin");
+      database::db_insert("foxy", "password");
+
       for (auto &port_type : port_types)
       {
         if (port_type.second == "https")
         {
           servers.push_back(std::shared_ptr<Server>(new Server(io_service, port_type.first, generator, threads)));
+          BOOST_LOG_TRIVIAL(info) << "[Server] HTTPS server created on port " << std::to_string(port_type.first);
         }
         else if (port_type.second == "http")
         {
           std::string hostname_fixed = hostname;
           hostname_fixed.pop_back();
           http_servers.push_back(std::shared_ptr<HttpServer>(new HttpServer(io_service, port_type.first, threads, hostname_fixed)));
+          BOOST_LOG_TRIVIAL(info) << "[Server] HTTP server created on port " << std::to_string(port_type.first);
         }
       }
 
