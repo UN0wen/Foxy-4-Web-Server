@@ -27,6 +27,9 @@ COPY --from=builder /usr/src/project/data ./data
 # Copies certs to certs dir
 COPY --from=builder /usr/src/project/certs /usr/src/project/certs
 
+# Copies data from login folder to current dir
+COPY --from=builder /usr/src/project/login ./login
+
 # TODO(drzheng): Expose some port(s)
 EXPOSE 8000
 

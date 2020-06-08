@@ -41,7 +41,7 @@ RequestHandler *LoginRequestHandler::Init(const std::string &location_path, cons
 
 Response LoginRequestHandler::perpare_html_response(const std::string file)
 {
-    Response response = Response();
+    Response response;
     std::string request_path;
     request_path = root_ + file;
     BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] preparing full path: " + request_path;
@@ -85,7 +85,7 @@ Response LoginRequestHandler::handle_request(const Request &request)
     //second, replace the path with root and then add index.html if it is GET request
     //third, if it is a GET request, return the html. Othewise, perform a SQL query.
      BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Currently handling request";
-    Response response = Response();
+    Response response;
     if (request.method_ == Request::MethodEnum::GET)
     {
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling GET request";
@@ -103,11 +103,13 @@ Response LoginRequestHandler::handle_request(const Request &request)
         bool is_valid_password = compare_password(username, password);
         if (is_valid_password)
         {   
+            BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password matched, preparing success response.";
             // Add the cookie here
             response = perpare_html_response("login_success.html");
         }
         else
         {
+            BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password or username did not match, preparing failure response.";
             response = perpare_html_response("login_failure.html");
         }
     }

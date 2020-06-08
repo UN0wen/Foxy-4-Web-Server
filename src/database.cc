@@ -49,15 +49,17 @@ namespace database
     int rc;
     std::string sql;
     sqlite3_stmt *query;
+    std::string hashed_password = Password::generate_hash(pass);
 
     sqlite3_open("auth.db", &db);
-
+    
     sql = "INSERT INTO AUTH(user,pass) "
-          "VALUES (?1, ?2);";
+          "VALUES (?1, ?2) "
+          "ON CONFLICT(user) DO UPDATE SET pass = excluded.pass;";
 
     rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &query, NULL);
     sqlite3_bind_text(query, 1, user.c_str(), user.size(), NULL);
-    sqlite3_bind_text(query, 2, pass.c_str(), pass.size(), NULL);
+    sqlite3_bind_text(query, 2, hashed_password.c_str(), hashed_password.size(), NULL);
 
     if (rc != SQLITE_OK)
     {
@@ -71,6 +73,8 @@ namespace database
     {
       BOOST_LOG_TRIVIAL(error) << "[SQLite] Error: " << sqlite3_errmsg(db);
     }
+
+    BOOST_LOG_TRIVIAL(info) << "[SQLite] Insert: " << user << " , " << hashed_password;
     sqlite3_finalize(query);
     sqlite3_close(db);
   }
@@ -79,7 +83,6 @@ namespace database
   {
     sqlite3 *db;
     int rc;
-    char *zErrMsg = 0;
     std::string sql;
     sqlite3_stmt *query;
     std::string data;
@@ -97,6 +100,7 @@ namespace database
     }
 
     rc = sqlite3_step(query);
+
     while (rc == SQLITE_ROW)
     {
       data = (const char *)sqlite3_column_text(query, 0);
@@ -106,8 +110,11 @@ namespace database
     {
       BOOST_LOG_TRIVIAL(error) << "[SQLite] Error: " << sqlite3_errmsg(db);
     }
+
+    BOOST_LOG_TRIVIAL(info) << "[SQLite] Selected: " << user << " , " << data;
     sqlite3_finalize(query);
     sqlite3_close(db);
+    return data;
   }
 
 } // namespace database
