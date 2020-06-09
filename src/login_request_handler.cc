@@ -11,7 +11,6 @@
 #include <regex>
 #include <iterator>
 
-
 LoginRequestHandler::LoginRequestHandler(const std::string &root, const std::string &path)
     : root_(root), path_(path)
 {
@@ -19,7 +18,7 @@ LoginRequestHandler::LoginRequestHandler(const std::string &root, const std::str
 
 RequestHandler *LoginRequestHandler::Init(const std::string &location_path, const NginxConfig &config)
 {
-    
+
     DataCollector::get_instance()->add_handler(location_path, "Login Request Handler");
     std::string root = "";
     for (const auto &s : config.statements_)
@@ -62,10 +61,11 @@ Response LoginRequestHandler::perpare_html_response(const std::string file)
 }
 
 //reference http://www.cplusplus.com/forum/general/182654/
-std::set<std::string> LoginRequestHandler::extract_username(const std::string text){
-    static const std::regex username_regex( "fname=(.*?)&", std::regex_constants::icase );
-    return { std::sregex_token_iterator( text.begin(), text.end(), username_regex, 1 ),
-             std::sregex_token_iterator{} } ;
+std::set<std::string> LoginRequestHandler::extract_username(const std::string text)
+{
+    static const std::regex username_regex("fname=(.*?)&", std::regex_constants::icase);
+    return {std::sregex_token_iterator(text.begin(), text.end(), username_regex, 1),
+            std::sregex_token_iterator{}};
 }
 
 bool LoginRequestHandler::compare_password(std::string username, std::string password)
@@ -74,9 +74,10 @@ bool LoginRequestHandler::compare_password(std::string username, std::string pas
     return Password::check_password(password, hashed_password);
 }
 
-std::string LoginRequestHandler::extract_password(const std::string text, int username_length){
-    
-    return text.substr(username_length+13);
+std::string LoginRequestHandler::extract_password(const std::string text, int username_length)
+{
+
+    return text.substr(username_length + 13);
 }
 
 Response LoginRequestHandler::handle_request(const Request &request)
@@ -84,33 +85,62 @@ Response LoginRequestHandler::handle_request(const Request &request)
     //first, check what is the request to see whether it is a GET or POST
     //second, replace the path with root and then add index.html if it is GET request
     //third, if it is a GET request, return the html. Othewise, perform a SQL query.
-     BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Currently handling request";
+    BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Currently handling request";
     Response response;
     if (request.method_ == Request::MethodEnum::GET)
     {
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling GET request";
-        response = perpare_html_response("index.html");
+        if (request.uri_.find("signup") != std::string::npos)
+        {
+            response = perpare_html_response("signup/index.html");
+        }
+        else
+        {
+            response = perpare_html_response("index.html");
+        }
     }
     else if (request.method_ == Request::MethodEnum::POST)
     {
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling POST request";
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Request body: " + request.body_;
-        std::string username = *extract_username(request.body_).begin();
-        std::string password = extract_password(request.body_, username.length());
+        std::string username = "";
+        std::string password = "";
+        if (!extract_username(request.body_).empty())
+        {
+            username = *extract_username(request.body_).begin();
+            password = extract_password(request.body_, username.length());
+        }
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Username: " + username;
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Password: " + password;
-
-        bool is_valid_password = compare_password(username, password);
-        if (is_valid_password)
-        {   
-            BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password matched, preparing success response.";
-            // Add the cookie here
-            response = perpare_html_response("login_success.html");
+        //Here is checking signup
+        if (request.uri_.find("signup") != std::string::npos)
+        {   //TODO: CHECK DUPLICATES IN SQL
+            bool is_valid_username = true;
+            if(username != "" && password != "" && is_valid_username){
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Everything passed, preparing success response.";
+                response = perpare_html_response("signup/signup_success.html");
+            }
+            else{
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Something failed, preparing failure response.";
+                response = perpare_html_response("signup/signup_failure.html");
+            }
         }
         else
-        {
-            BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password or username did not match, preparing failure response.";
-            response = perpare_html_response("login_failure.html");
+        {   //Here is checking login
+            bool is_valid_password = false;
+            if (username != "")
+                is_valid_password = compare_password(username, password);
+            if (is_valid_password)
+            {
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password matched for log in request, preparing success response.";
+                // Add the cookie here
+                response = perpare_html_response("login_success.html");
+            }
+            else
+            {
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password or username did not match for login request, preparing failure response.";
+                response = perpare_html_response("login_failure.html");
+            }
         }
     }
     else

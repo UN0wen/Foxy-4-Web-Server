@@ -98,6 +98,7 @@ target_link_libraries(health_request_handler response_generator data_collector B
 
 add_library(login_request_handler src/login_request_handler.cc)
 target_link_libraries(login_request_handler response_generator data_collector config  utility password database)
+
 # Dispatcher
 
 add_library(request_handler_generator src/request_handler_generator.cc)
