@@ -13,7 +13,7 @@
 #define BOOST_LOG_DYN_LINK 1
 BOOST_LOG_SCOPED_THREAD_TAG("ThreadID", boost::this_thread::get_id());
 
-Session::Session(boost::asio::io_service &io_service, boost::asio::ssl::context &context, RequestHandlerGenerator& generator)
+Session::Session(boost::asio::io_service &io_service, boost::asio::ssl::context &context, RequestHandlerGenerator &generator)
     : socket_(io_service, context),
       generator_(generator)
 {
@@ -179,7 +179,6 @@ void Session::handle_write(const boost::system::error_code &error)
     {
       BOOST_LOG_TRIVIAL(info) << "[Session] Closed session with IP " << remote_ip;
       close_socket();
-      delete this;
     }
     else
     {
@@ -203,5 +202,7 @@ void Session::close_socket()
   socket_.lowest_layer().cancel(ec);
   socket_.async_shutdown([&](...) {
     socket_.lowest_layer().close();
+    BOOST_LOG_TRIVIAL(info) << "[Session] Socket closed.";
+    delete this;
   });
 }

@@ -210,24 +210,28 @@ include(cmake/CodeCoverageReportConfig.cmake)
 generate_coverage_report(
     TARGETS 
         server 
-        server_lib 
-        session 
+        server_lib
+        http_server_lib 
+        session
+        http_session 
         config 
         config_parser 
         config_statement 
         utility
-        password 
+        password
+        database 
         response_generator
         data_collector
-        mime_types 
-        static_request_handler 
-        echo_request_handler 
+        mime_types  
         Boost::system 
         request_parser 
         status_request_handler
         not_found_request_handler 
         proxy_request_handler
         health_request_handler
+        login_request_handler
+        static_request_handler 
+        echo_request_handler
     TESTS 
         config 
         config_parser_test 
