@@ -1,15 +1,19 @@
-#include "login_request_handler.h"
-#include "response_generator.h"
+
 #include <boost/log/trivial.hpp>
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <sqlite/sqlite3.h>
+#include <regex>
+#include <iterator>
+
+#include "login_request_handler.h"
+#include "response_generator.h"
 #include "data_collector.h"
 #include "utility.h"
 #include "password.h"
 #include "database.h"
-#include <regex>
-#include <iterator>
 
 LoginRequestHandler::LoginRequestHandler(const std::string &root, const std::string &path)
     : root_(root), path_(path)
@@ -38,7 +42,7 @@ RequestHandler *LoginRequestHandler::Init(const std::string &location_path, cons
     return login_request_handler;
 }
 
-Response LoginRequestHandler::perpare_html_response(const std::string file)
+Response LoginRequestHandler::prepare_html_response(const std::string file)
 {
     Response response;
     std::string request_path;
@@ -61,23 +65,35 @@ Response LoginRequestHandler::perpare_html_response(const std::string file)
 }
 
 //reference http://www.cplusplus.com/forum/general/182654/
-std::set<std::string> LoginRequestHandler::extract_username(const std::string text)
+std::string LoginRequestHandler::extract_username(const std::string text)
 {
-    static const std::regex username_regex("fname=(.*?)&", std::regex_constants::icase);
-    return {std::sregex_token_iterator(text.begin(), text.end(), username_regex, 1),
-            std::sregex_token_iterator{}};
+    static const std::regex username_regex("username=(.*?)&", std::regex_constants::icase);
+    std::sregex_token_iterator it(text.begin(), text.end(), username_regex, 1);
+    static const std::sregex_token_iterator end;
+    return it == end ? "" : std::string(*it);
 }
 
 bool LoginRequestHandler::compare_password(std::string username, std::string password)
 {
-    std::string hashed_password = database::db_select_pass(username);
+    std::string hashed_password = "";
+    database::db_select_pass(username, hashed_password);
     return Password::check_password(password, hashed_password);
 }
 
-std::string LoginRequestHandler::extract_password(const std::string text, int username_length)
+bool LoginRequestHandler::signup(std::string username, std::string password)
 {
+    int rc = database::db_insert(username, password);
+    // Duplicate detected
+    BOOST_LOG_TRIVIAL(error) << rc;
+    return rc != SQLITE_CONSTRAINT;
+}
 
-    return text.substr(username_length + 13);
+std::string LoginRequestHandler::extract_password(const std::string text)
+{
+    static const std::regex password_regex("password=(.*?)(&|$)", std::regex_constants::icase);
+    std::sregex_token_iterator it(text.begin(), text.end(), password_regex, 1);
+    static const std::sregex_token_iterator end;
+    return it == end ? "" : std::string(*it);
 }
 
 Response LoginRequestHandler::handle_request(const Request &request)
@@ -92,41 +108,40 @@ Response LoginRequestHandler::handle_request(const Request &request)
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling GET request";
         if (request.uri_.find("signup") != std::string::npos)
         {
-            response = perpare_html_response("signup/index.html");
+            response = prepare_html_response("signup/index.html");
         }
         else
         {
-            response = perpare_html_response("index.html");
+            response = prepare_html_response("index.html");
         }
     }
     else if (request.method_ == Request::MethodEnum::POST)
     {
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Handling POST request";
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Request body: " + request.body_;
-        std::string username = "";
-        std::string password = "";
-        if (!extract_username(request.body_).empty())
-        {
-            username = *extract_username(request.body_).begin();
-            password = extract_password(request.body_, username.length());
-        }
+
+        std::string username = extract_username(request.body_);
+        std::string password = extract_password(request.body_);
+
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Username: " + username;
         BOOST_LOG_TRIVIAL(info) << "[LoginRequestHandler] Password: " + password;
         //Here is checking signup
         if (request.uri_.find("signup") != std::string::npos)
-        {   //TODO: CHECK DUPLICATES IN SQL
-            bool is_valid_username = true;
-            if(username != "" && password != "" && is_valid_username){
-                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Everything passed, preparing success response.";
-                response = perpare_html_response("signup/signup_success.html");
+        {
+            bool valid_signup = signup(username, password);
+            if (username != "" && password != "" && valid_signup)
+            {
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] [Signup] Signup successful, preparing success response.";
+                response = prepare_html_response("signup/signup_success.html");
             }
-            else{
-                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Something failed, preparing failure response.";
-                response = perpare_html_response("signup/signup_failure.html");
+            else
+            {
+                BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] [Signup] Signup failed: Duplicate username detected, preparing failure response.";
+                response = prepare_html_response("signup/signup_failure.html");
             }
         }
         else
-        {   //Here is checking login
+        { //Here is checking login
             bool is_valid_password = false;
             if (username != "")
                 is_valid_password = compare_password(username, password);
@@ -134,12 +149,12 @@ Response LoginRequestHandler::handle_request(const Request &request)
             {
                 BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password matched for log in request, preparing success response.";
                 // Add the cookie here
-                response = perpare_html_response("login_success.html");
+                response = prepare_html_response("login_success.html");
             }
             else
             {
                 BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password or username did not match for login request, preparing failure response.";
-                response = perpare_html_response("login_failure.html");
+                response = prepare_html_response("login_failure.html");
             }
         }
     }

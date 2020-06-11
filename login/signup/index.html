@@ -18,19 +18,28 @@
             </div>
         </div>
         <div class="text-center">
-            <form class="form-signin" method="POST">
+            <form class="form-signin" method="POST"
+                oninput='password2.setCustomValidity(password2.value != password.value ? "Passwords do not match." : "")'>
                 <div class="form-group">
                     <label for="username" class="sr-only">Username</label>
-                    <input type="text" name="fname" class="form-control" placeholder="Username" id="fname"
+                    <input type="text" name="username" class="form-control" placeholder="Username" id="username"
                         required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="password" class="sr-only">Password</label>
-                    <input type="password" name="lname" class="form-control" id="lname" placeholder="Password"
-                         required>
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Password"
+                        required>
                 </div>
-
+                <div class="form-group">
+                    <label for="password" class="sr-only">Confirm password</label>
+                    <input type="password" name="password2" class="form-control" id="password2"
+                        placeholder="Confirm Password">
+                </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
+
+                <div class="mt-2">
+                    <p>Back to <a href="/auth/login">Login</a></p>
+                </div>
             </form>
         </div>
     </div>

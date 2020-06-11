@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
       BOOST_LOG_TRIVIAL(info) << "[Server] Database created.";
 
       // Mock data
-      // TODO: remove this when we have login request handler
+      // Not removing this since it's faster to test with some default users
       database::db_insert("admin", "admin");
       database::db_insert("foxy", "password");
 

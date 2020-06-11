@@ -13,9 +13,10 @@ public:
 
 private:
     bool compare_password(std::string username, std::string password);
-    std::set<std::string> extract_username(const std::string text);
-    std::string extract_password(const std::string text, int username_length);
-    Response perpare_html_response(const std::string file);
+    bool signup(std::string username, std::string password);
+    std::string extract_username(const std::string text);
+    std::string extract_password(const std::string text);
+    Response prepare_html_response(const std::string file);
     std::string root_;
     std::string path_;
 };
