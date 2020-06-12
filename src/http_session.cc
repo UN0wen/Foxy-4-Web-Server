@@ -41,11 +41,20 @@ Response HttpSession::handle_request(const Request &request)
     Response response;
     BOOST_LOG_TRIVIAL(info) << "[HttpSession] Http Redirector is handling request";
     std::string location = "https://" + hostname_ + request.uri_;
-    response.code_ = Response::moved_temporarily;
-    response.headers_["Content-Length"] = std::to_string(response.body_.size());
-    response.headers_["Content-Type"] = "text/plain";
-    response.headers_["Connection"] = "close";
-    response.headers_["Location"] = location;
+
+    if (request.uri_[0] != '/')
+    {
+        response = ResponseGenerator::stock_response(Response::status_code::bad_request);
+    }
+    else
+    {
+        response.code_ = Response::moved_temporarily;
+        response.headers_["Content-Length"] = std::to_string(response.body_.size());
+        response.headers_["Content-Type"] = "text/plain";
+        response.headers_["Connection"] = "close";
+        response.headers_["Location"] = location;
+    }
+
     BOOST_LOG_TRIVIAL(info) << "[ResponseLength] " << std::to_string(response.body_.size());
     BOOST_LOG_TRIVIAL(info) << "[HttpSession] Finished processing request.";
     return response;
