@@ -166,6 +166,10 @@ add_executable(static_request_handler_test tests/static_request_handler/static_r
 target_link_libraries(static_request_handler_test static_request_handler gtest_main)
 gtest_discover_tests(static_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/static_request_handler)
 
+add_executable(login_request_handler_test tests/login_request_handler/login_request_handler_test.cc)
+target_link_libraries(login_request_handler_test login_request_handler database gtest_main)
+gtest_discover_tests(login_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/login_request_handler)
+
 add_executable(status_request_handler_test tests/status_request_handler/status_request_handler_test.cc)
 target_link_libraries(status_request_handler_test status_request_handler gtest_main)
 gtest_discover_tests(status_request_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/status_request_handler)
@@ -247,6 +251,7 @@ generate_coverage_report(
         not_found_request_handler_test 
         proxy_request_handler_test
         health_request_handler_test
+        login_request_handler_test
         data_collector_test
         password_test
 )
