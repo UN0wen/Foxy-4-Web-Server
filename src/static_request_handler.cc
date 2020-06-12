@@ -13,43 +13,107 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <set>
 #include <boost/log/trivial.hpp>
+#include <boost/algorithm/string.hpp>
 #include "mime_types.h"
 #include "data_collector.h"
 #include "utility.h"
+#include "cookie.h"
 
-StaticRequestHandler::StaticRequestHandler(const std::string &root, const std::string &path)
-    : root_(root), path_(path)
+StaticRequestHandler::StaticRequestHandler(const std::string &root, const std::string &auth, const std::string &path)
+    : root_(root), path_(path), auth_path_(auth)
 {
 }
 
-RequestHandler* StaticRequestHandler::Init(const std::string& location_path, const NginxConfig& config)
+RequestHandler *StaticRequestHandler::Init(const std::string &location_path, const NginxConfig &config)
 {
     std::string root = "";
+    std::string auth = "";
     DataCollector::get_instance()->add_handler(location_path, "Static Request Handler");
     for (const auto &s : config.statements_)
     {
         std::vector<std::string>::iterator find_root = std::find(s->tokens_.begin(),
                                                                  s->tokens_.end(),
                                                                  "root");
-        if(find_root != s->tokens_.end())
+        if (find_root != s->tokens_.end())
         {
             root = *(find_root + 1);
         }
+
+        std::vector<std::string>::iterator find_auth = std::find(s->tokens_.begin(),
+                                                                 s->tokens_.end(),
+                                                                 "auth");
+        if (find_auth != s->tokens_.end())
+        {
+            auth = *(find_auth + 1);
+        }
     }
-    if(!utility::is_quoted(&root))
+    if (!utility::is_quoted(&root))
         return nullptr;
 
-    StaticRequestHandler* static_request_handler = new StaticRequestHandler(root, location_path);
+    if (!utility::is_quoted(&auth))
+        auth = "";
+
+    StaticRequestHandler *static_request_handler = new StaticRequestHandler(root, auth, location_path);
     return static_request_handler;
+}
+
+bool StaticRequestHandler::check_cookie(std::string cookie_string)
+{
+    std::string cookie_value;
+    std::vector<std::string> cookies;
+    boost::split(cookies, cookie_string, boost::is_any_of("; "));
+
+    for (auto &cookie : cookies)
+    {
+        // String starts with 
+        if (cookie.rfind("jwt=", 0) == 0)
+        {
+            cookie_value = cookie.substr(4);
+            break;
+        }
+    }
+
+    return Cookie::verify_cookie(cookie_value);
+}
+
+Response StaticRequestHandler::prepare_redirect()
+{
+    Response response;
+    response.code_ = Response::moved_temporarily;
+    response.headers_["Content-Length"] = std::to_string(response.body_.size());
+    response.headers_["Content-Type"] = "text/plain";
+    response.headers_["Connection"] = "close";
+    response.headers_["Location"] = auth_path_;
+
+    return response;
 }
 
 Response StaticRequestHandler::handle_request(const Request &request)
 {
     // Decode url to path.
-    BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] static request handler is handling request.";
+    BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] Static request handler is handling request.";
     Response response = Response();
     std::string request_path;
+
+    std::string cookie_string = "";
+
+    // Find cookie
+    auto cookie_it = request.headers_.find("Cookie");
+
+    if (cookie_it != request.headers_.end())
+    {
+        cookie_string = cookie_it->second;
+    }
+
+    // Only check for cookie if there is an auth path
+    if (auth_path_.length() && !check_cookie(cookie_string))
+    {
+        response = prepare_redirect();
+        BOOST_LOG_TRIVIAL(info) << "[StaticRequestHandler] Cookie check failed, returning redirect.";
+        return response;
+    }
 
     if (!check_request_path(request.uri_, request_path))
     {
@@ -58,14 +122,15 @@ Response StaticRequestHandler::handle_request(const Request &request)
         return response;
     }
 
-    if (request_path == "") {
+    if (request_path == "")
+    {
         request_path = "/";
     }
 
     if (!replace_path(request_path))
     {
         BOOST_LOG_TRIVIAL(error) << "[StaticRequestHandler] Error: path not found in URI.";
-        
+
         response = ResponseGenerator::stock_response(Response::internal_server_error);
         return response;
     }

@@ -4,7 +4,7 @@ ERROR=0
 
 #test server using integration.conf
 
-printf "listen https 8000;\nlisten http 8008;\nhostname \"localhost:8000\";\nlocation \"/static/\" StaticHandler {\n\troot \"./data/\";\n} \n location \"/echo/\" EchoHandler{\n}" >integration.conf
+printf "listen https 8000;\nlisten http 8008;\nhostname \"localhost:8000\";\n location \"/echo/\" EchoHandler{\n}" >integration.conf
 
 
 SERVER_EXECUTABLE=$1

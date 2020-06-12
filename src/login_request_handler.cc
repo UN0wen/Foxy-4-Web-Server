@@ -14,6 +14,7 @@
 #include "utility.h"
 #include "password.h"
 #include "database.h"
+#include "cookie.h"
 
 LoginRequestHandler::LoginRequestHandler(const std::string &root, const std::string &path)
     : root_(root), path_(path)
@@ -148,8 +149,11 @@ Response LoginRequestHandler::handle_request(const Request &request)
             if (is_valid_password)
             {
                 BOOST_LOG_TRIVIAL(trace) << "[LoginRequestHandler] Password matched for log in request, preparing success response.";
-                // Add the cookie here
+                
+                std::string cookie = Cookie::generate_cookie(username);
+                
                 response = prepare_html_response("login_success.html");
+                response.headers_["Set-Cookie"] = "jwt=" + cookie + "; Path=/";
             }
             else
             {

@@ -5,12 +5,15 @@ location "/echo/" EchoHandler{
 
 location "/static/" StaticHandler{
 root "./data/";
+auth "/auth";
 }
 
 location "/images/" StaticHandler{
 root "./data/images/";
+auth "/auth";
 }
 
 location "/static/html/" StaticHandler{
 root "./data/html/";
+auth "/auth";
 }

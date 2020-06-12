@@ -43,6 +43,9 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # Enable Bash 
 # found at https://stackoverflow.com/questions/25627336/integrate-bash-test-scripts-in-cmake
 find_program(BASH_PROGRAM bash)
@@ -64,6 +67,12 @@ target_link_libraries(data_collector Boost::system)
 add_library(password src/password.cc)
 target_link_libraries(password ${CMAKE_SOURCE_DIR}/external_libs/libbcrypt.a)
 
+add_library(jwt include/jwt-cpp/jwt.h)
+set_target_properties(jwt PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(jwt ${OPENSSL_LIBRARIES} Threads::Threads)
+
+add_library(cookie src/cookie.cc)
+target_link_libraries(cookie jwt ${CMAKE_DL_LIBS} Boost::log)
 # SQLite 
 
 add_library(database src/database.cc)
@@ -82,7 +91,7 @@ add_library(echo_request_handler src/echo_request_handler.cc)
 target_link_libraries(echo_request_handler data_collector Boost::log)
 
 add_library(static_request_handler src/static_request_handler.cc)
-target_link_libraries(static_request_handler Boost::log mime_types config response_generator data_collector utility)
+target_link_libraries(static_request_handler Boost::log mime_types config response_generator data_collector utility cookie)
 
 add_library(status_request_handler src/status_request_handler.cc)
 target_link_libraries(status_request_handler response_generator data_collector)
@@ -97,7 +106,7 @@ add_library(health_request_handler src/health_request_handler.cc)
 target_link_libraries(health_request_handler response_generator data_collector Boost::log)
 
 add_library(login_request_handler src/login_request_handler.cc)
-target_link_libraries(login_request_handler response_generator data_collector config  utility password database)
+target_link_libraries(login_request_handler response_generator data_collector config  utility password database cookie)
 
 # Dispatcher
 
